@@ -1,5 +1,16 @@
-# project-tech-23-24-team-4
+# Juke - Ontdek nieuwe muziek
+
+## W.I.P
+
+## Start project
+```bash
+# Install project dependencies
+npm install
+
+# Start the project
+npm run dev
+```
 
 ## Overzicht
-bla bla bla
+
 ## License
