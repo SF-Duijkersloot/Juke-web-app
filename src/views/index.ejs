@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juke prototype</title>
+</head>
+<body>
+    <h1>Welcome bij Juke</h1>
+    <!-- if login data doesnt exist  -->
+    <% if (!loggedIn) { %>
+        <a href="/login">Log in with Spotify</a>
+    <% } %>
+    <% if (loggedIn) { %>
+        <a href="/top-tracks">View top tracks</a>
+    <% } %>
+    <script src="/public/script.js"></script>
+</body>
+</html>
