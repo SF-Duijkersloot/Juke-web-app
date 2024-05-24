@@ -16,6 +16,10 @@ app.get('/', (req, res) => {
     res.send('Test home page')
 })
 
+app.get('/zoek', (req, res) => {
+    res.render('pages/zoek')
+})
+
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`)
 })
