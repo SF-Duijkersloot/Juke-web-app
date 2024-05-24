@@ -1,0 +1,68 @@
+body {
+    height: 100vh;
+    margin: 0 2em 0 2em;
+    font-family: Poppins, sans-serif;
+    background-color: #FAFAFC;
+}
+
+h1{
+    font-family: Poppins-Bold;
+    margin-top: 5em;
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+}
+
+label{
+    margin-top: 1em;
+}
+
+label:after { content:"*"; }
+
+input[placeholder^="Vul je email hier in"], 
+input[placeholder^="Vul een gebruikersnaam hier in"], 
+input[placeholder^="Vul een wachtwoord hier in"] {
+    background-color: #D9D9D9;
+    font-family: Poppins;
+    border-radius: .4em;
+    border: none;
+    opacity: .5;
+    padding: .5em;
+    margin: .6em 0;
+}
+
+input[type=submit]{
+    background-color: #E88802;
+    font-family: Poppins;
+    border-radius: .4em;
+    border: none;
+    padding: .6em;
+    font-size: 1.2em;
+    margin-top:2em ;
+}
+
+.hint {
+    font-size: 0.8em;
+    color: #666;
+    opacity: .8;
+}
+
+Main> p{
+    text-align: center;
+    margin-top: 2em;
+}
+
+p> a{
+    color: #E88802;
+}
+
+footer > img{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2em;
+    width: 70%;
+    
+}
