@@ -1,162 +1,208 @@
-const express = require('express');
-const session = require('express-session');
-const dotenv = require('dotenv');
-const crypto = require('crypto');
-const querystring = require('querystring');
+const express = require('express')
+const session = require('express-session')
+const dotenv = require('dotenv')
+const crypto = require('crypto')
+const querystring = require('querystring')
 
-const app = express();
-const port = 3000;
+const app = express()
+const port = 3000
 
-dotenv.config();
+dotenv.config()
 
-const sess = {
-  secret: process.env.SESSION_SECRET,
-  cookie: {},
-  resave: false,
-  saveUninitialized: true,
-};
-
+// Set up middleware
 app
-  .use(express.static('public'))
-  .use(express.json())
-  .use(express.urlencoded({ extended: true }))
-  .use(session(sess))
-  .set('view engine', 'ejs')
-  .set('views', 'src/views');
+    // Serve static files from the 'public' directory   
+    .use(express.static('public'))
 
-app.get('/', (req, res) => {
-  res.render('index', { loggedIn: req.session.loggedIn });
-});
+    // Parse JSON and URL-encoded data into req.body
+    .use(express.json())
+    .use(express.urlencoded({ extended: true }))
 
-const client_id = process.env.CLIENT_ID;
-const redirect_uri = process.env.REDIRECT_URI;
-const client_secret = process.env.CLIENT_SECRET;
+    // EJS view engine
+    .set('view engine', 'ejs')
+    .set('views', 'src/views')
+  
+    // Server-side session storage
+    .use(session({ 
+        secret: 'keyboard cat',
+        resave: false,
+        saveUninitialized: true
+    }))
+
+// Standard routes
+app.get('/', (req, res) => 
+{
+    res.render('index', { loggedIn: req.session.loggedIn })
+})
+
+
+/**
+ * Spotify Web API Authorization Code Flow
+ */
+// Define environment variables
+const client_id = process.env.CLIENT_ID
+const redirect_uri = process.env.REDIRECT_URI
+const client_secret = process.env.CLIENT_SECRET
 
 // Generate random string for code verifier
 const generateRandomString = (length) => {
   return crypto
     .randomBytes(60)
     .toString('hex')
-    .slice(0, length);
-};
+    .slice(0, length)
+}
 
-app.get('/login', function(req, res) {
-  const state = generateRandomString(16);
-  const scope = 'user-read-private user-read-email user-top-read';
+// Endpoint to start authorization
+app.get('/login', (req, res) => 
+{
+    const state = generateRandomString(16)
+    const scope = `
+        user-read-private
+        user-read-email
+        user-top-read
+        `
+ 
+    // Store the state in session for later validation
+    req.session.state = state
 
-  // Store the state in session for later validation
-  req.session.state = state;
+    res.redirect('https://accounts.spotify.com/authorize?' +
+        querystring.stringify({
+            response_type: 'code',
+            client_id: client_id,
+            scope: scope,
+            redirect_uri: redirect_uri,
+            state: state,
+            show_dialog: true
+    }))
+})
 
-  res.redirect('https://accounts.spotify.com/authorize?' +
-    querystring.stringify({
-      response_type: 'code',
-      client_id: client_id,
-      scope: scope,
-      redirect_uri: redirect_uri,
-      state: state
-    }));
-});
+// Endpoint to handle the callback
+app.get('/callback', async (req, res) =>
+{
+    const code = req.query.code || null
+    const state = req.query.state || null
 
-app.get('/callback', function(req, res) {
-  const code = req.query.code || null;
-  const state = req.query.state || null;
-
-  if (state === null || state !== req.session.state) {
-    res.redirect('/#' +
-      querystring.stringify({
-        error: 'state_mismatch'
-      }));
-  } else {
-    // State is valid, proceed with token exchange
-    delete req.session.state;
-
-    const authOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
-      },
-      body: querystring.stringify({
-        code: code,
-        redirect_uri: redirect_uri,
-        grant_type: 'authorization_code'
-      })
-    };
-
-    fetch('https://accounts.spotify.com/api/token', authOptions) // Make request to token endpoint for tokens
-      .then(response => response.json())
-      .then(data => {
-        if (data.access_token) {
-          req.session.token = data;
-          req.session.loggedIn = true;
-
-          res.redirect('/');
-        } else {
-          res.redirect('/#' +
-            querystring.stringify({
-              error: 'invalid_token'
-            }));
-        }
-      })
-      .catch(error => {
-        console.error(error);
+    if (state === null || state !== req.session.state) 
+    {
         res.redirect('/#' +
-          querystring.stringify({
-            error: 'token_request_failed'
-          }));
-      });
-  }
-});
+        querystring.stringify({ error: 'state_mismatch' })
+        )
+    } 
+    else 
+    {
+        // delete req.session.state // State no longer needed
+
+        // Options for token request
+        const authOptions = 
+        {
+            method: 'POST',
+            headers: 
+            {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+            },
+            body: querystring.stringify({
+                code: code,
+                redirect_uri: redirect_uri,
+                grant_type: 'authorization_code'
+            })
+        }
+        try {
+            // Fetch token
+            await fetch('https://accounts.spotify.com/api/token', authOptions) // Make request to token endpoint for tokens
+            .then(response => response.json())
+            .then(data => 
+            {
+                req.session.token = data
+                req.session.loggedIn = true
+
+                console.log('Access Token:', data)
+                res.render('index', { loggedIn: req.session.loggedIn })
+            })
+        }
+        catch (error) 
+        {
+            console.error(error)
+            res.redirect('/#' +
+                querystring.stringify({ error: 'token_request_failed' })
+            )
+        }
+    }
+})
+
+
 /**
  * Web API helper function
  */
-async function fetchWebApi(endpoint, method, body) {
-  if (!req.session.token || !req.session.token.access_token) {
-    throw new Error('Access token is not set or invalid');
-  }
-  const res = await fetch(`https://api.spotify.com/${endpoint}`, {
-    headers: {
-      'Authorization': 'Bearer ' + req.session.token.access_token,
-      'Content-Type': 'application/json',
-    },
-    method,
-    body: JSON.stringify(body)
-  });
+async function fetchWebApi(req, endpoint, method, body) 
+{
+    if (!req.session.token || !req.session.token.access_token) 
+    {
+        throw new Error('Access token is not set or invalid')
+    }
+    try 
+    {
+        const res = await fetch(`https://api.spotify.com/${endpoint}`, 
+        {
+            headers: {
+                'Authorization': 'Bearer ' + req.session.token.access_token,
+                'Content-Type': 'application/json',
+            },
+            method,
+            body: JSON.stringify(body)
+        })
 
-  if (!res.ok) {
-    const errorResponse = await res.json();
-    throw new Error(`Error fetching data from Spotify API: ${errorResponse.error.message}`);
-  }
-
-  return await res.json();
+        return await res.json()
+    }
+    catch (error) 
+    {
+        console.error(error)
+        res.redirect('/#' +
+            querystring.stringify({ error: 'api_request_failed' })
+        )
+    }
 }
 
 // Get top tracks
-async function getTopTracks() {
-  return (await fetchWebApi(
-    'v1/me/top/tracks?time_range=long_term&limit=10', 'GET'
-  )).items;
+async function getTopTracks(req) 
+{
+    return (await fetchWebApi(
+        req,
+        'v1/me/top/tracks?time_range=long_term&limit=10', 'GET'
+    )).items
 }
 
-// Endpoint to get top tracks
-app.get('/top-tracks', async (req, res) => {
-  try {
-    if (!req.session.loggedIn) {
-      return res.status(401).json({ error: 'User is not logged in' });
-    }
-
-    const data = await getTopTracks();
-    console.log('Top Tracks:', data); // Log the top tracks for debugging
-    res.render('topTracks', { tracks: data });
-  } catch (error) {
-    console.error('Error fetching top tracks:', error);
-    res.status(500).json({ error: 'An error occurred while fetching top tracks.' });
+// URL to get top tracks
+app.get('/top-tracks', async (req, res) => 
+{
+    try 
+    {
+        if (!req.session.loggedIn) 
+        {
+            return res.status(401).json({ error: 'User is not logged in' })
+        }
+        
+        const data = await getTopTracks(req)
+        console.log('Top Tracks:', data) // Log the top tracks for debugging
+        res.render('topTracks', { tracks: data })
+  } 
+  catch (error) 
+  {
+    console.error('Error fetching top tracks:', error)
+    res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
   }
-});
+})
+
+// Debugging route to check session token
+app.get('/session-test', (req, res) => 
+{
+    console.log("session token", req.session.token)
+    res.send(req.session.token)
+})
 
 app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
-});
+  console.log(`Server listening at http://localhost:${port}`)
+})
 
 
 
@@ -170,61 +216,61 @@ app.listen(port, () => {
 
 
 // // V2
-// const express = require('express');
-// const crypto = require('crypto');
-// const dotenv = require('dotenv');
+// const express = require('express')
+// const crypto = require('crypto')
+// const dotenv = require('dotenv')
 
-// dotenv.config(); 
+// dotenv.config() 
 
-// const app = express();
-// const port = 3000;
+// const app = express()
+// const port = 3000
 
 // // In-memory storage for code verifier (in a production app, use a database)
-// let codeVerifierStore = {};
-// let currentToken = null;
+// let codeVerifierStore = {}
+// let currentToken = null
 
 // app
 //   .use(express.static('public'))
 //   .use(express.json())
 //   .use(express.urlencoded({ extended: true }))
 //   .set('view engine', 'ejs')
-//   .set('views', 'src/views');
+//   .set('views', 'src/views')
 
 // app.get('/', (req, res) => {
-//   res.render('index', { loggedIn: currentToken !== null });
-// });
+//   res.render('index', { loggedIn: currentToken !== null })
+// })
 
 // // Generate random string for code verifier
 // const generateRandomString = length => {
-//   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+//   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 //   return Array.from(crypto.randomBytes(length))
 //     .map(byte => possible[byte % possible.length])
-//     .join('');
-// };
+//     .join('')
+// }
 
 // // Generate SHA-256 hash
 // const sha256 = plain => {
-//   return crypto.createHash('sha256').update(plain).digest();
-// };
+//   return crypto.createHash('sha256').update(plain).digest()
+// }
 
 // // Base64 URL encode
 // const base64encode = input => {
 //   return input.toString('base64')
 //     .replace(/=/g, '')
 //     .replace(/\+/g, '-')
-//     .replace(/\//g, '_');
-// };
+//     .replace(/\//g, '_')
+// }
 
 // // Endpoint to start authorization
 // app.get('/login', async (req, res) => {
-//   const codeVerifier = generateRandomString(64);
-//   const codeChallenge = base64encode(sha256(codeVerifier));
-//   codeVerifierStore['current'] = codeVerifier; // Store code verifier
+//   const codeVerifier = generateRandomString(64)
+//   const codeChallenge = base64encode(sha256(codeVerifier))
+//   codeVerifierStore['current'] = codeVerifier // Store code verifier
 
-//   const clientId = process.env.CLIENT_ID;
-//   const redirectUri = process.env.REDIRECT_URI;
-//   const scope = 'user-read-private user-read-email user-top-read';
-//   const authUrl = new URL('https://accounts.spotify.com/authorize');
+//   const clientId = process.env.CLIENT_ID
+//   const redirectUri = process.env.REDIRECT_URI
+//   const scope = 'user-read-private user-read-email user-top-read'
+//   const authUrl = new URL('https://accounts.spotify.com/authorize')
 
 //   const params = {
 //     response_type: 'code',
@@ -233,18 +279,18 @@ app.listen(port, () => {
 //     code_challenge_method: 'S256',
 //     code_challenge: codeChallenge,
 //     redirect_uri: redirectUri,
-//   };
+//   }
 
-//   authUrl.search = new URLSearchParams(params).toString();
-//   res.redirect(authUrl.toString());
-// });
+//   authUrl.search = new URLSearchParams(params).toString()
+//   res.redirect(authUrl.toString())
+// })
 
 // // Endpoint to handle the callback
 // app.get('/callback', async (req, res) => {
-//   const code = req.query.code;
-//   const codeVerifier = codeVerifierStore['current'];
-//   const clientId = process.env.CLIENT_ID;
-//   const redirectUri = process.env.REDIRECT_URI;
+//   const code = req.query.code
+//   const codeVerifier = codeVerifierStore['current']
+//   const clientId = process.env.CLIENT_ID
+//   const redirectUri = process.env.REDIRECT_URI
 
 //   const payload = {
 //     method: 'POST',
@@ -258,29 +304,29 @@ app.listen(port, () => {
 //       redirect_uri: redirectUri,
 //       code_verifier: codeVerifier,
 //     }),
-//   };
+//   }
 
 //   try {
-//     const response = await fetch('https://accounts.spotify.com/api/token', payload);
-//     const data = await response.json();
+//     const response = await fetch('https://accounts.spotify.com/api/token', payload)
+//     const data = await response.json()
 //     if (data.error) {
-//       throw new Error(data.error_description);
+//       throw new Error(data.error_description)
 //     }
-//     currentToken = data; // Store access token
-//     console.log('Access Token:', data); // Log the access token for debugging
-//     res.render('index', { loggedIn: true });
+//     currentToken = data // Store access token
+//     console.log('Access Token:', data) // Log the access token for debugging
+//     res.render('index', { loggedIn: true })
 //   } catch (error) {
-//     console.error('Error fetching access token:', error);
-//     res.send('An error occurred while fetching the access token.');
+//     console.error('Error fetching access token:', error)
+//     res.send('An error occurred while fetching the access token.')
 //   }
-// });
+// })
 
 // /**
 //  * Web API helper function
 //  */
 // async function fetchWebApi(endpoint, method, body) {
 //   if (!currentToken || !currentToken.access_token) {
-//     throw new Error('Access token is not set or invalid');
+//     throw new Error('Access token is not set or invalid')
 //   }
 
 //   const res = await fetch(`https://api.spotify.com/${endpoint}`, {
@@ -290,39 +336,39 @@ app.listen(port, () => {
 //     },
 //     method,
 //     body: JSON.stringify(body)
-//   });
+//   })
 
 //   if (!res.ok) {
-//     const errorResponse = await res.json();
-//     throw new Error(`Error fetching data from Spotify API: ${errorResponse.error.message}`);
+//     const errorResponse = await res.json()
+//     throw new Error(`Error fetching data from Spotify API: ${errorResponse.error.message}`)
 //   }
 
-//   return await res.json();
+//   return await res.json()
 // }
 
 // // Get top tracks
 // async function getTopTracks() {
 //   return (await fetchWebApi(
 //     'v1/me/top/tracks?time_range=long_term&limit=10', 'GET'
-//   )).items;
+//   )).items
 // }
 
 // // Endpoint to get top tracks
 // app.get('/top-tracks', async (req, res) => {
 //   try {
 //     if (!currentToken) {
-//       return res.status(401).json({ error: 'User is not logged in' });
+//       return res.status(401).json({ error: 'User is not logged in' })
 //     }
 
-//     const data = await getTopTracks();
-//     console.log('Top Tracks:', data); // Log the top tracks for debugging
-//     res.render('topTracks', { tracks: data });
+//     const data = await getTopTracks()
+//     console.log('Top Tracks:', data) // Log the top tracks for debugging
+//     res.render('topTracks', { tracks: data })
 //   } catch (error) {
-//     console.error('Error fetching top tracks:', error);
-//     res.status(500).json({ error: 'An error occurred while fetching top tracks.' });
+//     console.error('Error fetching top tracks:', error)
+//     res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
 //   }
-// });
+// })
 
 // app.listen(port, () => {
-//   console.log(`Server listening at http://localhost:${port}`);
-// });
+//   console.log(`Server listening at http://localhost:${port}`)
+// })

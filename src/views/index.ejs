@@ -10,9 +10,11 @@
     <!-- if login data doesnt exist  -->
     <% if (!loggedIn) { %>
         <a href="/login">Log in with Spotify</a>
+        <a href="/session-test">Log session token</a>
     <% } %>
     <% if (loggedIn) { %>
         <a href="/top-tracks">View top tracks</a>
+        <a href="/session-test">Log session token</a>
     <% } %>
     <script src="/public/script.js"></script>
 </body>
