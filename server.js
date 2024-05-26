@@ -1,35 +1,51 @@
 const express = require('express');
+const session = require('express-session');
 const dotenv = require('dotenv');
+const crypto = require('crypto');
 const querystring = require('querystring');
-
-dotenv.config(); 
 
 const app = express();
 const port = 3000;
 
-let tokenResponse = null;
+dotenv.config();
 
-let client_id = process.env.CLIENT_ID;
-let redirect_uri = process.env.REDIRECT_URI;
-let client_secret = process.env.CLIENT_SECRET;
+const sess = {
+  secret: process.env.SESSION_SECRET,
+  cookie: {},
+  resave: false,
+  saveUninitialized: true,
+};
 
-function generateRandomString(length) {
-  var text = '';
-  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-  for (var i = 0; i < length; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
-}
+app
+  .use(express.static('public'))
+  .use(express.json())
+  .use(express.urlencoded({ extended: true }))
+  .use(session(sess))
+  .set('view engine', 'ejs')
+  .set('views', 'src/views');
 
 app.get('/', (req, res) => {
-    res.render('index', { loggedIn: tokenResponse !== null});
-})
+  res.render('index', { loggedIn: req.session.loggedIn });
+});
+
+const client_id = process.env.CLIENT_ID;
+const redirect_uri = process.env.REDIRECT_URI;
+const client_secret = process.env.CLIENT_SECRET;
+
+// Generate random string for code verifier
+const generateRandomString = (length) => {
+  return crypto
+    .randomBytes(60)
+    .toString('hex')
+    .slice(0, length);
+};
 
 app.get('/login', function(req, res) {
-  var state = generateRandomString(16);
-  var scope = 'user-read-private user-read-email';
+  const state = generateRandomString(16);
+  const scope = 'user-read-private user-read-email user-top-read';
+
+  // Store the state in session for later validation
+  req.session.state = state;
 
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
@@ -41,61 +57,100 @@ app.get('/login', function(req, res) {
     }));
 });
 
-app.get('/callback', async function(req, res) {
-  var code = req.query.code || null;
-  var state = req.query.state || null;
+app.get('/callback', function(req, res) {
+  const code = req.query.code || null;
+  const state = req.query.state || null;
 
-  if (state === null) {
+  if (state === null || state !== req.session.state) {
     res.redirect('/#' +
       querystring.stringify({
         error: 'state_mismatch'
       }));
   } else {
+    // State is valid, proceed with token exchange
+    delete req.session.state;
+
     const authOptions = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64')
+        'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
       },
-      body: new URLSearchParams({
+      body: querystring.stringify({
         code: code,
         redirect_uri: redirect_uri,
         grant_type: 'authorization_code'
       })
     };
 
-    try {
-      const tokenResponse = await fetch('https://accounts.spotify.com/api/token', authOptions);
-      const tokenData = await tokenResponse.json();
+    fetch('https://accounts.spotify.com/api/token', authOptions) // Make request to token endpoint for tokens
+      .then(response => response.json())
+      .then(data => {
+        if (data.access_token) {
+          req.session.token = data;
+          req.session.loggedIn = true;
 
-      if (tokenResponse.ok) {
-        const access_token = tokenData.access_token;
-        const refresh_token = tokenData.refresh_token;
-
-        const userResponse = await fetch('https://api.spotify.com/v1/me', {
-          headers: { 'Authorization': 'Bearer ' + access_token }
-        });
-        const userData = await userResponse.json();
-        console.log(userData);
-
+          res.redirect('/');
+        } else {
+          res.redirect('/#' +
+            querystring.stringify({
+              error: 'invalid_token'
+            }));
+        }
+      })
+      .catch(error => {
+        console.error(error);
         res.redirect('/#' +
           querystring.stringify({
-            access_token: access_token,
-            refresh_token: refresh_token
+            error: 'token_request_failed'
           }));
-      } else {
-        res.redirect('/#' +
-          querystring.stringify({
-            error: 'invalid_token'
-          }));
-      }
-    } catch (error) {
-      console.error('Error fetching access token:', error);
-      res.redirect('/#' +
-        querystring.stringify({
-          error: 'token_fetch_error'
-        }));
+      });
+  }
+});
+/**
+ * Web API helper function
+ */
+async function fetchWebApi(endpoint, method, body) {
+  if (!req.session.token || !req.session.token.access_token) {
+    throw new Error('Access token is not set or invalid');
+  }
+  const res = await fetch(`https://api.spotify.com/${endpoint}`, {
+    headers: {
+      'Authorization': 'Bearer ' + req.session.token.access_token,
+      'Content-Type': 'application/json',
+    },
+    method,
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const errorResponse = await res.json();
+    throw new Error(`Error fetching data from Spotify API: ${errorResponse.error.message}`);
+  }
+
+  return await res.json();
+}
+
+// Get top tracks
+async function getTopTracks() {
+  return (await fetchWebApi(
+    'v1/me/top/tracks?time_range=long_term&limit=10', 'GET'
+  )).items;
+}
+
+// Endpoint to get top tracks
+app.get('/top-tracks', async (req, res) => {
+  try {
+    if (!req.session.loggedIn) {
+      return res.status(401).json({ error: 'User is not logged in' });
     }
+
+    const data = await getTopTracks();
+    console.log('Top Tracks:', data); // Log the top tracks for debugging
+    res.render('topTracks', { tracks: data });
+  } catch (error) {
+    console.error('Error fetching top tracks:', error);
+    res.status(500).json({ error: 'An error occurred while fetching top tracks.' });
   }
 });
 
@@ -104,7 +159,17 @@ app.listen(port, () => {
 });
 
 
-// V2
+
+
+
+
+
+
+
+
+
+
+// // V2
 // const express = require('express');
 // const crypto = require('crypto');
 // const dotenv = require('dotenv');
@@ -158,7 +223,7 @@ app.listen(port, () => {
 
 //   const clientId = process.env.CLIENT_ID;
 //   const redirectUri = process.env.REDIRECT_URI;
-//   const scope = 'user-read-private user-read-email';
+//   const scope = 'user-read-private user-read-email user-top-read';
 //   const authUrl = new URL('https://accounts.spotify.com/authorize');
 
 //   const params = {
