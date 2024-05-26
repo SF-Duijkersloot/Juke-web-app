@@ -24,7 +24,7 @@ app
   
     // Server-side session storage
     .use(session({ 
-        secret: 'keyboard cat',
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true
     }))
@@ -168,7 +168,19 @@ async function getTopTracks(req)
 {
     return (await fetchWebApi(
         req,
-        'v1/me/top/tracks?time_range=long_term&limit=10', 'GET'
+        'v1/me/top/tracks?time_range=short_term&limit=5', 'GET'
+    )).items
+}
+
+async function getRecommendations(req) 
+{
+    const topTracks = await getTopTracks(req)
+    const seedTracks = topTracks.map(track => track.id).join(',')
+    console.log('Seed Tracks:', seedTracks)
+    return (await fetchWebApi(
+        req,
+        // `/v1/recommendations?limit=25&seed_tracks=${seedTracks}`, 'GET'
+        `/v1/recommendations?limit=25&seed_tracks=3va7Q99A1EJk8eAZ2DV74v`, 'GET'
     )).items
 }
 
@@ -184,7 +196,26 @@ app.get('/top-tracks', async (req, res) =>
         
         const data = await getTopTracks(req)
         console.log('Top Tracks:', data) // Log the top tracks for debugging
-        res.render('topTracks', { tracks: data })
+        res.render('topTracks', { tracks: data, recommendations: []})
+  } 
+  catch (error) 
+  {
+    console.error('Error fetching top tracks:', error)
+    res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
+  }
+})
+
+app.get('/reccomendations', async (req, res) =>
+{
+    try 
+    {
+        if (!req.session.loggedIn) 
+        {
+            return res.status(401).json({ error: 'User is not logged in' })
+        }
+        const recommendations = await getRecommendations(req)
+        console.log('Recommendations:', recommendations) // Log the top tracks for debugging
+        res.render('topTracks', { recommendations: recommendations, tracks: []})
   } 
   catch (error) 
   {
