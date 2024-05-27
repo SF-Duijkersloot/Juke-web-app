@@ -174,13 +174,14 @@ async function getTopTracks(req)
 
 async function getRecommendations(req) 
 {
-    const topTracks = await getTopTracks(req)
-    const seedTracks = topTracks.map(track => track.id).join(',')
-    console.log('Seed Tracks:', seedTracks)
+    // const topTracks = await getTopTracks(req)
+    // const seedTracks = topTracks.map(track => track.id).join(',')
+    // console.log('Seed Tracks:', seedTracks)
     return (await fetchWebApi(
         req,
         // `/v1/recommendations?limit=25&seed_tracks=${seedTracks}`, 'GET'
-        `/v1/recommendations?limit=25&seed_tracks=3va7Q99A1EJk8eAZ2DV74v`, 'GET'
+        // `/v1/recommendations?limit=5&seed_tracks=3va7Q99A1EJk8eAZ2DV74v`, 'GET'
+        `/v1/recommendations?limit=5&market=ES&seed_artists=4NHQUGzhtTLFvgF5SZesLK&seed_genres=classical%2Ccountry&seed_tracks=0c6xIDDpzE81m2q797ordA`, 'GET'
     )).items
 }
 
@@ -205,7 +206,7 @@ app.get('/top-tracks', async (req, res) =>
   }
 })
 
-app.get('/reccomendations', async (req, res) =>
+app.get('/get-recommendations', async (req, res) =>
 {
     try 
     {
@@ -213,9 +214,9 @@ app.get('/reccomendations', async (req, res) =>
         {
             return res.status(401).json({ error: 'User is not logged in' })
         }
-        const recommendations = await getRecommendations(req)
-        console.log('Recommendations:', recommendations) // Log the top tracks for debugging
-        res.render('topTracks', { recommendations: recommendations, tracks: []})
+        const recommendationData = await getRecommendations(req)
+        console.log('Recommendations:', recommendationData) // Log the top tracks for debugging
+        // res.render('topTracks', { recommendations: recommendations, tracks: []})
   } 
   catch (error) 
   {
