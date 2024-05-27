@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juke prototype</title>
+    <title>Create playlist</title>
 </head>
 <body>
     <h1>Welcome bij Juke</h1>
@@ -13,10 +13,8 @@
         <a href="/session-test">Log session token</a>
     <% } %>
     <% if (loggedIn) { %>
-        <a href="/create-playlist">Create playlist</a>
-        <a href="/top-tracks">View top tracks</a>
-        <a href="/session-test">Log session token</a>
+        <h1>Your Juke playlist</h1>
     <% } %>
-    <script src="/public/script.js"></script>
+    <script src="./server.js"></script>
 </body>
 </html>
