@@ -164,6 +164,7 @@ async function fetchWebApi(req, endpoint, method, body)
     }
 }
 
+
 // Get top tracks
 async function getTopTracks(req) 
 {
@@ -173,19 +174,6 @@ async function getTopTracks(req)
     )).items
 }
 
-async function getRecommendations(req) 
-{
-    const topTracks = await getTopTracks(req)
-    const seedTracks = topTracks.map(track => track.id).join(',')
-    console.log('Seed Tracks:', seedTracks)
-    return (await fetchWebApi(
-        req,
-        // `/v1/recommendations?limit=25&seed_tracks=${seedTracks}`, 'GET'
-        `/v1/recommendations?limit=25&seed_tracks=3va7Q99A1EJk8eAZ2DV74v`, 'GET'
-    )).items
-}
-
-// URL to get top tracks
 app.get('/top-tracks', async (req, res) => 
 {
     try 
@@ -206,24 +194,31 @@ app.get('/top-tracks', async (req, res) =>
   }
 })
 
-app.get('/reccomendations', async (req, res) =>
-{
-    try 
-    {
-        if (!req.session.loggedIn) 
-        {
-            return res.status(401).json({ error: 'User is not logged in' })
-        }
-        const recommendations = await getRecommendations(req)
-        console.log('Recommendations:', recommendations) // Log the top tracks for debugging
-        res.render('topTracks', { recommendations: recommendations, tracks: []})
-  } 
-  catch (error) 
-  {
-    console.error('Error fetching top tracks:', error)
-    res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
-  }
+
+// Get user profile
+async function getUserProfile(req) {
+    try {
+        return (await fetchWebApi(
+            req,
+            'v1/me', 'GET'
+        ))
+    }
+    catch (error) {
+        console.error(error)
+    }
+}
+
+app.get('/profile', async (req, res) => {
+    try {
+        const profileData = await getUserProfile(req)
+        console.log('Profile:', profileData)
+        res.redirect('/')
+    }
+    catch (error) {
+        console.error('Error fetching profile:', error)
+    }
 })
+
 
 // Debugging route to check session token
 app.get('/session-test', (req, res) => 
@@ -232,75 +227,51 @@ app.get('/session-test', (req, res) =>
     res.send(req.session.token)
 })
 
-// vivanne stuk: maak playlist aan
 
-// const tracksUri = [
-//     'spotify:track:5ARG0eQKOYOsFAdFeUuXrm','spotify:track:6G53gri09h5KXRegSCcWy9','spotify:track:3fajzhEHSdlSmY31dORz9M','spotify:track:24LO2UMNHWNoPZnhdAw4TO','spotify:track:0LMwmV37RCmBO2so0szAFs','spotify:track:03eyNjBM2mpx28H6kdaufN','spotify:track:0nTl6b84STC3E1J32yw4iq','spotify:track:3PHdgHZ58axM9ss7mkD2XJ','spotify:track:3cR5ZtQ4JqGj4VHBb1gvFf','spotify:track:5H3TCfiw0CQTX1XU7A9TXM'
-//   ];
-  
-//   async function createPlaylist(tracksUri){
-//     const { id: user_id } = await fetchWebApi('v1/me', 'GET')
-  
-//     const playlist = await fetchWebApi(
-//       `v1/users/${user_id}/playlists`, 'POST', {
-//         "name": "My recommendation playlist",
-//         "description": "Playlist created by the tutorial on developer.spotify.com",
-//         "public": false
-//     })
-  
-//     await fetchWebApi(
-//       `v1/playlists/${playlist.id}/tracks?uris=${tracksUri.join(',')}`,
-//       'POST'
-//     );
-  
-//     return playlist;
-//   }
-
-async function getUserData(req) {
-    return (await fetchWebApi(
-        req,
-        'v1/me', 'GET'
-    )).items
-}
-
-// async function createdPlaylist(req) 
-// {
-//     const userData = await getUserData(req)
-//     console.log(userData)
-//     return (await fetchWebApi(
-//         req,
-//         `v1/users/${userData.id}/playlists`, 'POST', {
-//             "name": "My recommendation playlist",
-//             "description": "Playlist created by the tutorial on developer.spotify.com",
-//             "public": false
-//         }).items
-// }
-
-async function createdPlaylist(req) {
-    const userData = await getUserData(req);
-    console.log('userdata:', userData);
-    return (await fetchWebApi(
-        req,
-        `v1/users/${userData.id}/playlists`, 'POST', {
-            "name": "My recommendation playlist",
+// Create playlist  
+async function createPlaylist(req){
+    try {
+        const userInfo = await getUserProfile(req)
+        
+        // Create playlist
+        const playlist = await fetchWebApi(
+            req,
+          `v1/users/${userInfo.id}/playlists`, 'POST', {
+            "name": "Your Juke Playlist",
             "description": "Playlist created by the tutorial on developer.spotify.com",
             "public": false
-        }
-    )).items;
-}
+        })
 
+        // Add top tracks to playlist
+        const topTracks = await getTopTracks(req)
+        const tracksUri = topTracks.map(track => `spotify:track:${track.id}`);
+        console.log('Tracks URI:', tracksUri)
+
+        await fetchWebApi(
+            req,
+            `v1/playlists/${playlist.id}/tracks?uris=${tracksUri.join(',')}`,
+            'POST'
+        )
+        return playlist
+    }
+    catch (error) {
+        console.error('Error fetching - creating playlist:', error)
+    }
+}
   
-  app.get('/create-playlist', async (req, res) => 
-  {
-    const Playlist = await createdPlaylist(req);
-    console.log(Playlist.name, Playlist.id);
-  })
+app.get('/create-playlist', async (req, res) => 
+{
+    try {
+        const playlist = await createPlaylist(req)
+        console.log("createdPlaylist", playlist)
+        res.redirect('/')
+    }
+    catch (error) {
+        console.error('Error url - creating playlist:', error)
+    }
+})
+
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`)
 })
-
-
-
-
-

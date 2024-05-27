@@ -7,15 +7,17 @@
 </head>
 <body>
     <h1>Welcome bij Juke</h1>
-    <!-- if login data doesnt exist  -->
     <% if (!loggedIn) { %>
         <a href="/login">Log in with Spotify</a>
         <a href="/session-test">Log session token</a>
     <% } %>
+    
     <% if (loggedIn) { %>
-        <a href="/create-playlist">Create playlist</a>
+        <a href="/profile">Get profile</a>
         <a href="/top-tracks">View top tracks</a>
         <a href="/session-test">Log session token</a>
+        <a href="/create-playlist">Create a playlist</a>
+        <h1>Your Juke playlist</h1>
     <% } %>
     <script src="/public/script.js"></script>
 </body>
