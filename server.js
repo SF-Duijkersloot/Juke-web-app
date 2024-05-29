@@ -36,6 +36,18 @@ app.get('/', (req, res) =>
 })
 
 
+// Logout route
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            return res.status(500).json({ error: 'Failed to log out' });
+        }
+
+        res.redirect('/');
+    });
+});
+
 /**
  * Spotify Web API Authorization Code Flow
  */
@@ -275,3 +287,5 @@ app.get('/create-playlist', async (req, res) =>
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`)
 })
+
+
