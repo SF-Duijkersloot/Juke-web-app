@@ -8,7 +8,7 @@ const app = express()
 const port = 3000
 
 dotenv.config()
-// hallo
+
 // Set up middleware
 app
     // Serve static files from the 'public' directory   
@@ -29,6 +29,7 @@ app
         saveUninitialized: true
     }))
 
+
 // Standard routes
 app.get('/', (req, res) => 
 {
@@ -36,17 +37,45 @@ app.get('/', (req, res) =>
 })
 
 
+/**
+ * Setup MongoDB
+ */
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
+// Construct URL used to connect to database from info in the .env file
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`
+// Create a MongoClient
+const client = new MongoClient(uri, {
+    serverApi: 
+    {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
+})
+
+// Try to open a database connection
+client.connect()
+.then(() => {
+    console.log('Database connection established')
+})
+.catch((err) => {
+    console.log(`Database connection error - ${err}`)
+    console.log(`For uri - ${uri}`)
+})
+
+// Get the users collection
+const usersCollection = client.db(process.env.DB_NAME).collection('users')
+
 // Logout route
 app.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-            return res.status(500).json({ error: 'Failed to log out' });
-        }
-
+    try {
+        req.session.destroy()
         res.redirect('/');
-    });
-});
+    }
+    catch (error) {
+        console.error('Error logging out:', error)
+    }
+})
 
 /**
  * Spotify Web API Authorization Code Flow
@@ -106,8 +135,6 @@ app.get('/callback', async (req, res) =>
     } 
     else 
     {
-        // delete req.session.state // State no longer needed
-
         // Options for token request
         const authOptions = 
         {
@@ -135,6 +162,32 @@ app.get('/callback', async (req, res) =>
                 console.log('Access Token:', data)
                 res.render('index', { loggedIn: req.session.loggedIn })
             })
+
+            // Get user profile
+            const profileData = await getUserProfile(req)
+            console.log('Profile:', profileData)
+
+            const user = {
+                _id: profileData.id,
+                name: profileData.display_name,
+                email: profileData.email
+            }
+
+            // Check if user exists in the database
+            const userExists = await usersCollection.findOne({ _id: user._id })
+            if (!userExists) {
+                usersCollection.insertOne(user)
+                .then(result => {
+                    console.log(`Successfully inserted item with _id: ${result.insertedId}`)
+                })
+                .catch(err => {
+                    console.error(`Failed to insert item: ${err}`)
+                })
+            }
+            else {
+                console.log('User already exists in the database')
+            }
+
         }
         catch (error) 
         {
@@ -287,5 +340,3 @@ app.get('/create-playlist', async (req, res) =>
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`)
 })
-
-
