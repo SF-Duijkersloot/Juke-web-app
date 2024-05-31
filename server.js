@@ -106,8 +106,6 @@ app.get('/callback', async (req, res) =>
     } 
     else 
     {
-        // delete req.session.state // State no longer needed
-
         // Options for token request
         const authOptions = 
         {
@@ -129,10 +127,13 @@ app.get('/callback', async (req, res) =>
             .then(response => response.json())
             .then(data => 
             {
-                req.session.token = data
-                req.session.loggedIn = true
+                // Store token in session if it exists
+                if (data.access_token) {
+                    req.session.token = data
+                    req.session.loggedIn = true
+                }
 
-                console.log('Access Token:', data)
+                console.log('Access Token:', req.session.token)
                 res.render('index', { loggedIn: req.session.loggedIn })
             })
         }
@@ -144,6 +145,16 @@ app.get('/callback', async (req, res) =>
             )
         }
     }
+})
+
+
+app.get('/empty', (req, res) => {
+    res.redirect('/')
+})
+
+app.get('/get-refresh-token', async (req, res) => {
+    console.log('Refresh token:', req.session.token.refresh_token)
+    res.redirect('/')
 })
 
 
