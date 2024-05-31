@@ -121,46 +121,6 @@ app.get('/login', (req, res) =>
     }))
 })
 
-// app.get('/callback', async (req, res) => {
-//     const code = req.query.code || null;
-//     const state = req.query.state || null;
-
-//     if (state === null || state !== req.session.state) {
-//         return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
-//     } 
-
-//     const authOptions = {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/x-www-form-urlencoded',
-//             'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
-//         },
-//         body: querystring.stringify({
-//             code: code,
-//             redirect_uri: redirect_uri,
-//             grant_type: 'authorization_code'
-//         })
-//     };
-
-//     try {
-//         const response = await fetch('https://accounts.spotify.com/api/token', authOptions);
-//         const data = await response.json();
-
-//         if (response.ok) {
-//             req.session.token = data;
-//             req.session.loggedIn = true;
-//             console.log('Access Token:', data);
-//             return res.render('index', { loggedIn: req.session.loggedIn });
-//         } else {
-//             console.error('Error fetching token:', data);
-//             return res.redirect('/#' + querystring.stringify({ error: 'token_request_failed' }));
-//         }
-//     } catch (error) {
-//         console.error(error);
-//         return res.redirect('/#' + querystring.stringify({ error: 'token_request_failed' }));
-//     }
-// });
-
 
 // Endpoint to handle the callback
 app.get('/callback', async (req, res) =>
@@ -193,10 +153,9 @@ app.get('/callback', async (req, res) =>
         }
         try {
             // Fetch token
-            await fetch('https://accounts.spotify.com/api/token', authOptions) // Make request to token endpoint for tokens
+            await fetch('https://accounts.spotify.com/api/token', authOptions)
             .then(response => response.json())
-            .then(data => 
-            {
+            .then(data => {
                 // Store token in session if it exists
                 if (data.access_token) {
                     req.session.token = data
@@ -204,35 +163,37 @@ app.get('/callback', async (req, res) =>
                 }
 
                 console.log('Access Token:', req.session.token)
-                res.render('index', { loggedIn: req.session.loggedIn })
             })
 
-            // // Get user profile
-            // const profileData = await getUserProfile(req)
-            // console.log('Profile:', profileData)
+            // Get user profile and store in database (if not logged in)
+            if (!req.session.loggedIn) {
+                const profileData = await getUserProfile(req)
+                console.log('Profile:', profileData)
 
-            // const user = {
-            //     _id: profileData.id,
-            //     name: profileData.display_name,
-            //     email: profileData.email
-            // }
+                const user = {
+                    _id: profileData.id,
+                    name: profileData.display_name,
+                    email: profileData.email
+                }
 
-            // // Check if user exists in the database
-            // const userExists = await usersCollection.findOne({ _id: user._id })
-            // if (!userExists) {
-            //     usersCollection.insertOne(user)
-            //     .then(result => {
-            //         console.log(`Successfully inserted item with _id: ${result.insertedId}`)
-            //     })
-            //     .catch(err => {
-            //         console.error(`Failed to insert item: ${err}`)
-            //     })
-            // }
-            // else {
-            //     console.log('User already exists in the database')
-            // }
+                // Check if user exists in the database
+                const userExists = await usersCollection.findOne({ _id: user._id })
+                if (!userExists) {
+                    usersCollection.insertOne(user)
+                    .then(result => {
+                        console.log(`Successfully inserted item with _id: ${result.insertedId}`)
+                    })
+                    .catch(err => {
+                        console.error(`Failed to insert item: ${err}`)
+                    })
+                } else {
+                    console.log('User already exists in the database')
+                }
+            }
 
-        }
+            // Redirect to the homepage after successful callback
+            res.redirect('/home')
+        } 
         catch (error) 
         {
             console.error(error)
@@ -240,6 +201,21 @@ app.get('/callback', async (req, res) =>
                 querystring.stringify({ error: 'token_request_failed' })
             )
         }
+    }
+})
+
+// Route for rendering the homepage
+app.get('/home', async (req, res) => {
+    try {
+        if (req.session.loggedIn) {
+            res.render('index', { loggedIn: req.session.loggedIn })
+        }
+        else {
+            res.redirect('/login')
+        }
+    }
+    catch (error) {
+        console.error('Error rendering homepage:', error)
     }
 })
 
