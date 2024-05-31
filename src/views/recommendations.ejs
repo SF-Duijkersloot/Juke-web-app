@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your recommendations</title>
+</head>
+
+<body>
+    <h1>Dit zijn jouw recommendations</h1>
+    <ul>
+        <!-- Create li's for each item inside "tracks" -->
+        <% if (tracks && tracks.length > 0) { %>
+            <% tracks.forEach(track => { %>
+                <li>
+                    <img src="<%= track.album.images[0].url %>" alt="Album cover">
+                    <h2><%= track.name %></h2>
+                    <p><%= track.artists[0].name %></p>
+                    <!-- Knoppen voor like en dislike -->
+                    <form>
+                        <input type="hidden" value='<%= track.id %>' class="input" />
+                        <button class="like">LIKE</button>
+                        <button class="dislike">DISLIKE</button>
+                    </form>
+                </li>
+            <% }) %>
+        <% } %>
+    </ul>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -197,10 +197,13 @@ app.get('/callback', async (req, res) =>
             .then(response => response.json())
             .then(data => 
             {
-                req.session.token = data
-                req.session.loggedIn = true
+                // Store token in session if it exists
+                if (data.access_token) {
+                    req.session.token = data
+                    req.session.loggedIn = true
+                }
 
-                console.log('Access Token:', data)
+                console.log('Access Token:', req.session.token)
                 res.render('index', { loggedIn: req.session.loggedIn })
             })
 
@@ -238,6 +241,16 @@ app.get('/callback', async (req, res) =>
             )
         }
     }
+})
+
+
+app.get('/empty', (req, res) => {
+    res.redirect('/')
+})
+
+app.get('/get-refresh-token', async (req, res) => {
+    console.log('Refresh token:', req.session.token.refresh_token)
+    res.redirect('/')
 })
 
 
@@ -299,6 +312,49 @@ app.get('/top-tracks', async (req, res) =>
     res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
   }
 })
+
+async function getRecommendations(req, topTracksIds){
+    // Endpoint reference : https://developer.spotify.com/documentation/web-api/reference/get-recommendations
+    return (await fetchWebApi(
+      req,
+      `v1/recommendations?limit=5&seed_tracks=${topTracksIds.join(',')}`, 'GET'
+    )).tracks;
+  }
+  
+
+app.get('/recommendations', async (req, res) => {
+    try {
+        const topTracks = await getTopTracks(req);
+        const topTracksIds = topTracks.map(track => track.id);
+        const recommendedTracks = await getRecommendations(req, topTracksIds);
+        console.log(
+          recommendedTracks.map(
+            ({name, artists}) =>
+              `${name} by ${artists.map(artist => artist.name).join(', ')}`
+          )
+        );
+        res.render('recommendations', { tracks: recommendedTracks });
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
+    }
+});
+
+
+// Endpoint om een track leuk te vinden
+app.post('/like', async (req, res) => {
+    const trackId = req.body.trackId;
+    // Voer hier de logica uit om de track als 'liked' te markeren
+    res.status(200).send('Track liked successfully');
+});
+
+// Endpoint om een track niet leuk te vinden
+app.post('/dislike', async (req, res) => {
+    const trackId = req.body.trackId;
+    // Voer hier de logica uit om de track als 'disliked' te markeren
+    res.status(200).send('Track disliked successfully');
+});
+
 
 
 // Get user profile
@@ -381,3 +437,15 @@ app.get('/create-playlist', async (req, res) =>
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`)
 })
+
+
+app.post('/', (req, res) => {
+    const {parcel, action} = req.body
+    console.log(parcel, action)
+    if (!parcel) { 
+        return res.status (400).send({ status: 'failed' })
+    }
+    res.status(200).send({status: 'received' })
+}
+
+)
