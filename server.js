@@ -8,7 +8,7 @@ const app = express()
 const port = 3000
 
 dotenv.config()
-// hallo
+
 // Set up middleware
 app
     // Serve static files from the 'public' directory   
@@ -29,6 +29,7 @@ app
         saveUninitialized: true
     }))
 
+
 // Standard routes
 app.get('/', (req, res) => 
 {
@@ -36,17 +37,45 @@ app.get('/', (req, res) =>
 })
 
 
+/**
+ * Setup MongoDB
+ */
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
+// Construct URL used to connect to database from info in the .env file
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`
+// Create a MongoClient
+const client = new MongoClient(uri, {
+    serverApi: 
+    {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
+})
+
+// Try to open a database connection
+client.connect()
+.then(() => {
+    console.log('Database connection established')
+})
+.catch((err) => {
+    console.log(`Database connection error - ${err}`)
+    console.log(`For uri - ${uri}`)
+})
+
+// Get the users collection
+const usersCollection = client.db(process.env.DB_NAME).collection('users')
+
 // Logout route
 app.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-            return res.status(500).json({ error: 'Failed to log out' });
-        }
-
+    try {
+        req.session.destroy()
         res.redirect('/');
-    });
-});
+    }
+    catch (error) {
+        console.error('Error logging out:', error)
+    }
+})
 
 /**
  * Spotify Web API Authorization Code Flow
@@ -92,6 +121,47 @@ app.get('/login', (req, res) =>
     }))
 })
 
+// app.get('/callback', async (req, res) => {
+//     const code = req.query.code || null;
+//     const state = req.query.state || null;
+
+//     if (state === null || state !== req.session.state) {
+//         return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
+//     } 
+
+//     const authOptions = {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/x-www-form-urlencoded',
+//             'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+//         },
+//         body: querystring.stringify({
+//             code: code,
+//             redirect_uri: redirect_uri,
+//             grant_type: 'authorization_code'
+//         })
+//     };
+
+//     try {
+//         const response = await fetch('https://accounts.spotify.com/api/token', authOptions);
+//         const data = await response.json();
+
+//         if (response.ok) {
+//             req.session.token = data;
+//             req.session.loggedIn = true;
+//             console.log('Access Token:', data);
+//             return res.render('index', { loggedIn: req.session.loggedIn });
+//         } else {
+//             console.error('Error fetching token:', data);
+//             return res.redirect('/#' + querystring.stringify({ error: 'token_request_failed' }));
+//         }
+//     } catch (error) {
+//         console.error(error);
+//         return res.redirect('/#' + querystring.stringify({ error: 'token_request_failed' }));
+//     }
+// });
+
+
 // Endpoint to handle the callback
 app.get('/callback', async (req, res) =>
 {
@@ -136,6 +206,32 @@ app.get('/callback', async (req, res) =>
                 console.log('Access Token:', req.session.token)
                 res.render('index', { loggedIn: req.session.loggedIn })
             })
+
+            // // Get user profile
+            // const profileData = await getUserProfile(req)
+            // console.log('Profile:', profileData)
+
+            // const user = {
+            //     _id: profileData.id,
+            //     name: profileData.display_name,
+            //     email: profileData.email
+            // }
+
+            // // Check if user exists in the database
+            // const userExists = await usersCollection.findOne({ _id: user._id })
+            // if (!userExists) {
+            //     usersCollection.insertOne(user)
+            //     .then(result => {
+            //         console.log(`Successfully inserted item with _id: ${result.insertedId}`)
+            //     })
+            //     .catch(err => {
+            //         console.error(`Failed to insert item: ${err}`)
+            //     })
+            // }
+            // else {
+            //     console.log('User already exists in the database')
+            // }
+
         }
         catch (error) 
         {
@@ -343,8 +439,6 @@ app.listen(port, () => {
 })
 
 
-// 
-
 app.post('/', (req, res) => {
     const {parcel, action} = req.body
     console.log(parcel, action)
@@ -355,5 +449,3 @@ app.post('/', (req, res) => {
 }
 
 )
-
-
