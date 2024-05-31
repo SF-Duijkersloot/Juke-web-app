@@ -16,14 +16,18 @@ app.get('/', (req, res) => {
     res.send('Test home page')
 })
 
-
 app.get('/zoek', (req, res) => {
     res.render('pages/zoek')
 })
 
+app.get('/genres', (req, res) => {
+    res.render('pages/genres')
+}) 
+
 app.get('/connect', (req, res) => {
     res.render('connect')
 }) 
+
 
 
 app.listen(port, () => {
