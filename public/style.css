@@ -9,14 +9,12 @@
     --light: #FAFAFC;
 
     /* Typografie */
-    --d1: 4.5em;
-    --h1: 3.5em;
-    --h2: 3em;
-    --h3: 2em;
-    --h4: 1.5em;
-    --p1: 1.125em;
-    --p2: 1em;
-
+    --d1: 3em;
+    --h1: 2em;
+    --h2: 1.5em;
+    --h3: 1.125em;
+    --h4: 1em;
+    --p1: 1em;
 }
 
 /* Algemene stijlen */
@@ -30,19 +28,19 @@ body {
     box-sizing: border-box;
 }
 
-h1,h2,h3,h4,h5,h6 {
+h1, h2, h3, h4, h5, h6 {
     margin: 0;
     font-family: 'Poppins', sans-serif;
 }
 
 /* Koppen */
 h1 {
-    font-size: var(--h3);
+    font-size: var(--h1);
     font-weight: bold;
 }
 
 h2 {
-    font-size: var(--h4);
+    font-size: var(--h2);
     font-weight: bold;
 }
 
@@ -54,11 +52,10 @@ h3 {
 h4 {
     font-size: var(--h4);
     font-weight: bold;
-    text-transform: uppercase;
 }
 
 p {
-    font-size: var(--p2);
+    font-size: var(--p1);
     margin-top: 0;
     margin-bottom: 1em;
 }
@@ -67,20 +64,25 @@ header {
     padding-bottom: 1.25em;
 }
 
-/* Zoek-pagina */
+/* Zoek-pagina & genres-pagina */
 
-section {
-    position: relative;
+#searchHeader {
+    border-bottom: solid 0.1em var(--dark)
 }
 
-#search-bar {
+#searchHeader input {
     width: 90%;
     padding: 10px;
     margin-top: 20px;
     font-size: 1em;
 }
 
-ul {
+.searchList {
+    position: relative;
+    margin-bottom: 3em;
+}
+
+.searchList ul {
     list-style-type: none;
     padding: 0;
     display: flex;
@@ -88,28 +90,28 @@ ul {
     gap: 0.5em;
 }
 
-li {
+.searchList li {
     display: flex;
     align-items: center;
     width: 100%;
 }
 
-li img {
-    width: 4em;
-    height: 4em;
+.searchList img {
+    width: 3.5em;
+    height: 3.5em;
     border-radius: 50%;
     margin-right: 1.5em;
 }
 
-li p {
+.searchList p {
     margin: 0;
 }
 
-.swipeButton {
+.searchList button {
     margin-left: auto;
 }
 
-.swipeButton {
+.searchList button {
     font-family: 'Poppins', sans-serif;
     font-size: 1em;
     font-weight: 600;
@@ -121,7 +123,7 @@ li p {
     cursor: pointer;
 }
 
-.swipeButton:hover {
+.searchList button:hover {
     scale: 1.1;
     filter: drop-shadow(var(--primary) 0.1em 0.1em 0.9em);
 }
@@ -129,5 +131,29 @@ li p {
 .moreLink {
     color: var(--primary);
     float: right;
-    margin-top: 1em;
+}
+
+/* genre-pagina */
+
+#h1Genre {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-bottom: solid 0.1em var(--dark);
+}
+
+#h1Genre a {
+    position: absolute;
+    left: 0;
+    width: 1.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#h1Genre img {
+    transform: rotate(180deg);
+    width: 1.4em;
+    height: auto;
 }
