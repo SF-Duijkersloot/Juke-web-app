@@ -5,7 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your recommendations</title>
 </head>
-
+<style>
+    img {
+        width: 250px;
+    }
+    ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        list-style-type: none;
+        padding: 0;
+        gap: 5em;
+    }
+    li {
+        width: 19em;
+        text-align: center;
+    }
+</style>
 <body>
     <h1>Dit zijn jouw recommendations</h1>
     <ul>
@@ -19,8 +35,8 @@
                     <!-- Knoppen voor like en dislike -->
                     <form>
                         <input type="hidden" value='<%= track.id %>' class="input" />
-                        <button class="like">LIKE</button>
-                        <button class="dislike">DISLIKE</button>
+                        <button class="like-button">LIKE</button>
+                        <button class="dislike-button">DISLIKE</button>
                     </form>
                 </li>
             <% }) %>
