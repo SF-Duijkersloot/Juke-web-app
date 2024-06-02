@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function loadSong(song) {
         card.querySelector('.card header').style.backgroundImage = `url(${song.cover})`;
-        card.querySelector('section div h2').textContent = song.title;
+        card.querySelector('section div h3').textContent = song.title;
         card.querySelector('section div p').textContent = song.artist;
         card.querySelector('aside p').textContent = song.genre;
     }
@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleSwipe(offsetX) {
         if (offsetX > 50 || offsetX < -50) {
             let liked = offsetX > 50;
-            // Handle like or dislike action here
             console.log(liked ? 'Liked' : 'Disliked', songs[currentSongIndex]);
             
             currentSongIndex = (currentSongIndex + 1) % songs.length;
@@ -55,14 +54,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.style.transition = 'transform 0.3s ease';
             }, 50);
             
-            // Reset button colors
             dislikeBtn.style.backgroundColor = '';
             dislikeBtn.style.border = '';
             likeBtn.style.backgroundColor = '';
             likeBtn.style.border = '';
         } else {
             card.style.transform = 'translateX(0) rotate(0)';
-            // Reset button colors
+
             dislikeBtn.style.backgroundColor = '';
             dislikeBtn.style.border = '';
             likeBtn.style.backgroundColor = '';

@@ -29,7 +29,7 @@ app.get('/connect', (req, res) => {
 }) 
 
 app.get('/verkennen', (req, res) => {
-    res.render('pages/aanmelden')
+    res.render('pages/verkennen')
 }) 
 
 
