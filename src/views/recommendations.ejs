@@ -25,18 +25,23 @@
 <body>
     <h1>Dit zijn jouw recommendations</h1>
     <ul>
-        <!-- Create li's for each item inside "tracks" -->
+        <%# Loop through the tracks and display them %>
+
         <% if (tracks && tracks.length > 0) { %>
             <% tracks.forEach(track => { %>
                 <li>
                     <img src="<%= track.album.images[0].url %>" alt="Album cover">
                     <h2><%= track.name %></h2>
                     <p><%= track.artists[0].name %></p>
-                    <!-- Knoppen voor like en dislike -->
+                    
+                    <%# Add a form with hidden input fields to store the necessary track information %>
                     <form>
-                        <input type="hidden" value='<%= track.id %>' class="input" />
-                        <button class="like-button">LIKE</button>
-                        <button class="dislike-button">DISLIKE</button>
+                        <input type="hidden" name="track_id" value="<%= track.id %>" class="input" />
+                        <input type="hidden" name="track_name" value="<%= track.name %>" class="input" />
+                        <input type="hidden" name="track_artists" value="<%= JSON.stringify(track.artists.map(artist => artist.name)) %>" class="input" />
+                        <input type="hidden" name="track_images" value="<%= JSON.stringify(track.album.images) %>" class="input" />
+                        <button type="submit" name="action" value="like" class="like-button">LIKE</button>
+                        <button type="submit" name="action" value="dislike" class="dislike-button">DISLIKE</button>
                     </form>
                 </li>
             <% }) %>
