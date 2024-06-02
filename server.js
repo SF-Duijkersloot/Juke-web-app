@@ -174,7 +174,8 @@ app.get('/callback', async (req, res) => {
                     name: profileData.display_name,
                     playlist_id: '',
                     likedSongs: [],
-                    dislikedSongs: []
+                    dislikedSongs: [],
+                    recommendations: []
                 }
 
                 // Check if user exists in the database
@@ -475,7 +476,6 @@ app.get('/delete-playlist', async (req, res) => {
         Like and Dislike handling
 
 ===========================================*/
-
 app.post('/like', async (req, res) => {
     handleSongAction(req, res, 'likedSongs')
     // addSongToPlaylist(req)
@@ -507,9 +507,13 @@ async function handleSongAction(req, res, arrayName) {
             console.error('Song already liked or disliked')
         } else {
             // Add song to database
+            
             await usersCollection.updateOne(
                 { _id: userId },
-                { $push: { [arrayName]: track_id} }
+                { 
+                    $push: { [arrayName]: track_id },
+                    $push: { recommendations: track_id }
+                }
             )
             console.log('Song added to', [arrayName])
 
@@ -542,6 +546,23 @@ async function addSongToPlaylist(req) {
     } catch (error) {
         console.error('Error adding song to playlist:', error)
     }
+}
+
+async function registerSong(req) {
+    try {
+        const { track_id } = req.body
+
+        const song = await songsCollection.findOne({ _id: track_id })
+        if (!song) {
+            await songsCollection.insertOne({ _id: track_id })
+            console.log('Song added to database')
+        } else {
+            console.log('Song already exists in the database')
+        }
+    } catch (error) {
+        console.error('Error registering song:', error)
+    }
+
 }
 
 
