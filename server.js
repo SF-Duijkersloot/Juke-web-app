@@ -44,6 +44,7 @@ app
 
 ===========================================*/
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
+const { create } = require('domain')
 // Construct URL used to connect to database from info in the .env file
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`
 // Create a MongoClient
@@ -395,30 +396,17 @@ app.get('/profile', async (req, res) => {
 
 /*==========================================\
 
-                Create playlist
+              Playlist handling
 
 ===========================================*/
 // Function to create the Juke Playlist
-async function createJukePlaylist(req) {
+async function JukePlaylist(req) {
     try {
         const userInfo = req.session.user
         const user = await usersCollection.findOne({ _id: userInfo.id }, { playlist_id: 1 }) // playlist_id: 1, to only return the playlist_id field
 
         if (user.playlist_id) {
             console.log('Playlist_id exists:', user.playlist_id)
-
-            // Check if it exists on Spotify
-            const playlist = await fetchWebApi(
-                req,
-                `v1/playlists/${user.playlist_id}`, 
-                'GET'
-            )
-
-            // If the playlist response is not 200, the log that
-            if (playlist.status !== 200) {
-                console.error('Playlist does not exist on Spotify')
-                return
-            }
 
             return user.playlist_id
         } else {
@@ -434,16 +422,16 @@ async function createJukePlaylist(req) {
                     public: false
                 }
             )
-            
+
             // Set playlist_id in the user's DB object
             await usersCollection.updateOne(
                 { _id: userInfo.id },
                 { $set: { playlist_id: playlist.id } }
             )
-            console.log('Created playlist:', playlist.id)
-            return playlist
-        }
 
+            console.log('Created playlist:', playlist.id)
+            return playlist.id
+        }
     } catch (error) {
         console.error('Error creating playlist:', error)
     }
@@ -452,13 +440,32 @@ async function createJukePlaylist(req) {
 // Route to handle playlist creation
 app.get('/create-playlist', async (req, res) => {
     try {
-        const playlist = await createJukePlaylist(req)
+        const playlist = await JukePlaylist(req)
         // console.log("createdPlaylist", playlist)
         res.redirect('/')
     } catch (error) {
         console.error('Error url - creating playlist:', error)
     }
 })
+
+app.get('/delete-playlist', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+
+        // Remove the playlist_id field from the user's document
+        const result = await usersCollection.updateOne(
+            { _id: userId },
+            { $unset: { playlist_id: '' } }
+        );
+
+        console.log('Playlist deleted from DB')
+
+        res.redirect('/')
+    } catch (err) {
+        console.error('Error deleting playlist ID:', err);
+        res.status(500).send('An error occurred while deleting the playlist ID');
+    }
+});
 
 
 
@@ -471,7 +478,7 @@ app.get('/create-playlist', async (req, res) => {
 
 app.post('/like', async (req, res) => {
     handleSongAction(req, res, 'likedSongs')
-    addSongToPlaylist(req)
+    // addSongToPlaylist(req)
 })
 
 app.post('/dislike', async (req, res) => {
@@ -494,22 +501,46 @@ async function handleSongAction(req, res, arrayName) {
         if (!user) {
             return res.status(404).send({ status: 'error', message: 'User not found' })
         }
-
+        
         // Check if the song is already in the user's liked or disliked songs array
         if (user.likedSongs.includes(track_id) || user.dislikedSongs.includes(track_id)) {
             console.error('Song already liked or disliked')
         } else {
-            // Add the song to the user's disliked songs array
+            // Add song to database
             await usersCollection.updateOne(
                 { _id: userId },
                 { $push: { [arrayName]: track_id} }
             )
+            console.log('Song added to', [arrayName])
+
+            // Add song to playlist if its liked
+            if (arrayName === 'likedSongs') {
+                addSongToPlaylist(req)
+            }
         }
 
         res.status(200).send({ status: 'success' })
     } catch (err) {
         console.error(err)
         res.status(500).send({ status: 'error', message: err.message })
+    }
+}
+
+async function addSongToPlaylist(req) {
+    try {
+        const { track_id } = req.body
+
+        const playlistId = await JukePlaylist(req)
+        const response = await fetchWebApi(
+            req,
+            `v1/playlists/${playlistId}/tracks`,
+            'POST',
+            { uris: [`spotify:track:${track_id}`] }
+        )
+
+        console.log('Song added to playlist', response)
+    } catch (error) {
+        console.error('Error adding song to playlist:', error)
     }
 }
 
