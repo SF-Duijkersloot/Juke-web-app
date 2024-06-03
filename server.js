@@ -33,7 +33,7 @@ app
 // Standard routes
 app.get('/', (req, res) => 
 {
-    res.render('index', { loggedIn: req.session.loggedIn })
+    res.render('index', { loggedIn: req.session.loggedIn, results:[] }) 
 })
 
 
@@ -121,47 +121,6 @@ app.get('/login', (req, res) =>
     }))
 })
 
-// app.get('/callback', async (req, res) => {
-//     const code = req.query.code || null;
-//     const state = req.query.state || null;
-
-//     if (state === null || state !== req.session.state) {
-//         return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
-//     } 
-
-//     const authOptions = {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/x-www-form-urlencoded',
-//             'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
-//         },
-//         body: querystring.stringify({
-//             code: code,
-//             redirect_uri: redirect_uri,
-//             grant_type: 'authorization_code'
-//         })
-//     };
-
-//     try {
-//         const response = await fetch('https://accounts.spotify.com/api/token', authOptions);
-//         const data = await response.json();
-
-//         if (response.ok) {
-//             req.session.token = data;
-//             req.session.loggedIn = true;
-//             console.log('Access Token:', data);
-//             return res.render('index', { loggedIn: req.session.loggedIn });
-//         } else {
-//             console.error('Error fetching token:', data);
-//             return res.redirect('/#' + querystring.stringify({ error: 'token_request_failed' }));
-//         }
-//     } catch (error) {
-//         console.error(error);
-//         return res.redirect('/#' + querystring.stringify({ error: 'token_request_failed' }));
-//     }
-// });
-
-
 // Endpoint to handle the callback
 app.get('/callback', async (req, res) =>
 {
@@ -204,33 +163,9 @@ app.get('/callback', async (req, res) =>
                 }
 
                 console.log('Access Token:', req.session.token)
-                res.render('index', { loggedIn: req.session.loggedIn })
+                res.render('index', { loggedIn: req.session.loggedIn, results: [] })
             })
 
-            // // Get user profile
-            // const profileData = await getUserProfile(req)
-            // console.log('Profile:', profileData)
-
-            // const user = {
-            //     _id: profileData.id,
-            //     name: profileData.display_name,
-            //     email: profileData.email
-            // }
-
-            // // Check if user exists in the database
-            // const userExists = await usersCollection.findOne({ _id: user._id })
-            // if (!userExists) {
-            //     usersCollection.insertOne(user)
-            //     .then(result => {
-            //         console.log(`Successfully inserted item with _id: ${result.insertedId}`)
-            //     })
-            //     .catch(err => {
-            //         console.error(`Failed to insert item: ${err}`)
-            //     })
-            // }
-            // else {
-            //     console.log('User already exists in the database')
-            // }
 
         }
         catch (error) 
@@ -433,12 +368,6 @@ app.get('/create-playlist', async (req, res) =>
     }
 })
 
-
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`)
-})
-
-
 app.post('/', (req, res) => {
     const {parcel, action} = req.body
     console.log(parcel, action)
@@ -449,3 +378,29 @@ app.post('/', (req, res) => {
 }
 
 )
+
+// Zoekfunctie
+app.get('/search', async (req, res) => {
+    const query = req.query.q;
+    
+    if (!query) {
+        return res.status(400).send({ error: 'No query provided' });
+    }
+
+    try {
+        const results = await fetchWebApi(
+            req,
+            `v1/search?q=${encodeURIComponent(query)}&type=track,artist,album&limit=10`,
+            'GET'
+        );
+
+        res.render('searchResults', { results: results, query: query });
+    } catch (error) {
+        console.error('Error performing search:', error);
+        res.status(500).json({ error: 'An error occurred while performing search.' });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server listening at http://localhost:${port}`)
+  })

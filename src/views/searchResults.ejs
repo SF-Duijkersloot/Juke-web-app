@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+
+    <!-- Zoekformulier -->
+<form action="/search" method="get">
+    <input type="text" name="q" placeholder="Search for music..." value="<%= typeof query !== 'undefined' ? query : '' %>">
+    <button type="submit">Search</button>
+</form>
+
+
+    <!-- Resultaten weergeven -->
+    <h2>Tracks</h2>
+    <ul>
+        <% results.tracks.items.forEach(track => { %>
+            <li><%= track.name %> by <%= track.artists.map(artist => artist.name).join(', ') %></li>
+        <% }); %>
+    </ul>
+
+    <h2>Artists</h2>
+    <ul>
+        <% results.artists.items.forEach(artist => { %>
+            <li><%= artist.name %></li>
+        <% }); %>
+    </ul>
+
+    <h2>Albums</h2>
+    <ul>
+        <% results.albums.items.forEach(album => { %>
+            <li><%= album.name %> by <%= album.artists.map(artist => artist.name).join(', ') %></li>
+        <% }); %>
+    </ul>
+
+    <a href="/">Go back</a>
+</body>
+</html>

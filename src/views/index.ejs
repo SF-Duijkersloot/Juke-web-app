@@ -19,7 +19,15 @@
         <a href="/session-test">Log session token</a>
         <a href="/create-playlist">Create a playlist</a>
         <a href="/empty">Empty url</a>
-        <a href="/refresh-token">Get refresh_token</a>
+        <a href="/get-refresh-token">Get refresh_token</a>
+        
+        <!-- zoekformulier -->
+        <form action="/search" method="get">
+            <input type="text" name="q" placeholder="Search for music..." value="<%= typeof query !== 'undefined' ? query : '' %>">
+            <button type="submit">Search</button>
+        </form>
+        
+        
     <% } %>
     <script src="app.js"></script>
 </body>
