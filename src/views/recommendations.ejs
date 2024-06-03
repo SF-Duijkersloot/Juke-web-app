@@ -5,39 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your recommendations</title>
 </head>
-<style>
-    img {
-        width: 250px;
-    }
-    ul {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        list-style-type: none;
-        padding: 0;
-        gap: 5em;
-    }
-    li {
-        width: 19em;
-        text-align: center;
-    }
-</style>
+
 <body>
     <h1>Dit zijn jouw recommendations</h1>
     <ul>
-        <!-- Create li's for each item inside "tracks" -->
         <% if (tracks && tracks.length > 0) { %>
             <% tracks.forEach(track => { %>
                 <li>
                     <img src="<%= track.album.images[0].url %>" alt="Album cover">
                     <h2><%= track.name %></h2>
                     <p><%= track.artists[0].name %></p>
-                    <!-- Knoppen voor like en dislike -->
                     <form>
                         <input type="hidden" value='<%= track.id %>' class="input" />
-                        <button class="like-button">LIKE</button>
-                        <button class="dislike-button">DISLIKE</button>
+                        <button class="like">LIKE</button>
+                        <button class="dislike">DISLIKE</button>
                     </form>
+                    <% if (track.preview_url) { %>
+                        <button class="preview-button" data-preview-url="<%= track.preview_url %>">Play Preview</button>
+                    <% } else { %>
+                        <p>Preview not available</p>
+                    <% } %>
                 </li>
             <% }) %>
         <% } %>
