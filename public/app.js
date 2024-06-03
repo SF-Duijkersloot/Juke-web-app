@@ -1,27 +1,24 @@
-document.querySelectorAll('.like, .dislike').forEach(button => {
-    button.addEventListener('click', async function(e) {
+const likeButtons = document.querySelectorAll('.like-button');
+const dislikeButtons = document.querySelectorAll('.dislike-button');
+
+likeButtons.forEach(likeButton => {
+    const input = likeButton.closest('form').querySelector('.input');
+
+    likeButton.addEventListener('click', async function(e) {
         e.preventDefault();
-        const input = this.parentElement.querySelector('.input');
 
-        if (input.value === '') {
-            return;
-        }
+        const trackId = input.value;
 
-        const baseUrl = 'http://localhost:3000';
-        const action = this.classList.contains('like') ? 'like' : 'dislike';
-        const res = await fetch(baseUrl, {
+        // Send a request to the /like route
+        const res = await fetch('/like', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                parcel: input.value,
-                action: action
-            })
+            body: JSON.stringify({ track_id: trackId })
         });
     });
 });
-
 
 // play song function
 
@@ -53,4 +50,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+dislikeButtons.forEach(dislikeButton => {
+    const input = dislikeButton.closest('form').querySelector('.input');
 
+    dislikeButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const trackId = input.value;
+
+        // Send a request to the /dislike route
+        const res = await fetch('/dislike', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ track_id: trackId })
+        });
+
+        // // Handle the server response
+        // const data = await res.json();
+        // console.log(data.status);
+    });
+});
