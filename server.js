@@ -25,7 +25,11 @@ app.get('/genres', (req, res) => {
 }) 
 
 app.get('/connect', (req, res) => {
-    res.render('connect')
+    res.render('pages/connect')
+}) 
+
+app.get('/verkennen', (req, res) => {
+    res.render('pages/verkennen')
 }) 
 
 
