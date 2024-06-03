@@ -337,7 +337,7 @@ header {
     /* margin-left: auto;
     margin-right: auto; */
     width: 10em;
-    animation: rotation 10s infinite ease;
+    animation: rotation 8s infinite ease;
     animation-timing-function: linear;
 }
 
@@ -350,10 +350,16 @@ header {
 }
 
 @keyframes rotation {
-    from{
+    0% {
         transform: rotate(0deg);
     }
-    to{
+    25% {
+        transform: rotate(90deg);
+    }
+    26% {
+        transform: rotate(80deg);
+    }
+    100% {
         transform: rotate(360deg);
     }
 }
@@ -471,7 +477,9 @@ header {
         filter: invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(250%) contrast(103%);
     }
 /* -------------------nav----------------- */
-
+body{
+    height:100vh;
+}
 .dropdown h2{
     display: contents;
     color: var(--light);
@@ -486,6 +494,7 @@ header {
     padding: 1em 2em;
     background-color: var(--dark);
     border-radius: 1em;
+    z-index: 200;
 }
 
 .navigatieButton {
@@ -516,13 +525,13 @@ header {
     align-items: center;
     justify-content: start;
     border-radius: .4em;
-    background-color: var(--grey);
+    background-color: var(--primary);
     padding: .5em;
     opacity: 1;
     transition: none;
     width: 80%;
     text-decoration: none;
-    
+
 }
 
 .navigatieContent a:visited {
@@ -606,8 +615,12 @@ header {
         height: 95vh;
         }
 /* ---------------------verkennen------------------- */
-        .verkennen{
-            width: 40%;
+       #main{
+        width: 90%;
+        float: right;
+       }
+    .verkennen{
+            width: 60%;
             margin-top: 0;
         }
         .verkennen p{
@@ -615,7 +628,7 @@ header {
             color: var(--primary);
         }
         .card{
-            margin-top: 1em;
+            margin-top: 0;
         }
         .card article > header {
             height: 70%;
@@ -627,10 +640,10 @@ header {
         
         .buttons {
             position: absolute;
-            bottom: 2em;
+            bottom: 4em;
             display: flex;
             justify-content: center;
             align-items: center;
            
         }
-}
+    }

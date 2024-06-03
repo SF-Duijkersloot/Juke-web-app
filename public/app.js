@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dislikeBtn.style.border = '';
             likeBtn.style.backgroundColor = '';
             likeBtn.style.border = '';
+
         } else {
             card.style.transform = 'translateX(0) rotate(0)';
 
