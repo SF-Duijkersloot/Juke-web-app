@@ -10,7 +10,6 @@ const handleButtonClick = async (e, action) => {
     const trackArtists = JSON.parse(form.querySelector('input[name="track_artists"]').value);
     const trackImages = JSON.parse(form.querySelector('input[name="track_images"]').value);
 
-
     const res = await fetch(`/${action}`, {
         method: 'POST',
         headers: {
@@ -70,6 +69,7 @@ function createRecommendationElement(track) {
             <button type="submit" name="action" value="like" class="like-button">LIKE</button>
             <button type="submit" name="action" value="dislike" class="dislike-button">DISLIKE</button>
         </form>
+        <button class="preview-button" data-preview-url="${track.preview_url}">Play Preview</button>
     `;
 
     // Add event listeners for the "Like" and "Dislike" buttons
@@ -78,6 +78,10 @@ function createRecommendationElement(track) {
 
     likeButton.addEventListener('click', (e) => handleButtonClick(e, 'like'));
     dislikeButton.addEventListener('click', (e) => handleButtonClick(e, 'dislike'));
+
+    // Add event listener for the preview button
+    const previewButton = li.querySelector('.preview-button');
+    previewButton.addEventListener('click', () => handlePreviewButtonClick(previewButton));
 
     return li;
 }
@@ -88,4 +92,34 @@ likeButtons.forEach(likeButton => {
 
 dislikeButtons.forEach(dislikeButton => {
     dislikeButton.addEventListener('click', (e) => handleButtonClick(e, 'dislike'));
+});
+
+let currentAudio = new Audio();
+
+const handlePreviewButtonClick = (button) => {
+    const previewUrl = button.getAttribute('data-preview-url');
+
+    if (currentAudio.src !== previewUrl) {
+        currentAudio.src = previewUrl;
+        currentAudio.play();
+        button.textContent = "Pause Preview";
+    } else {
+        if (currentAudio.paused) {
+            currentAudio.play();
+            button.textContent = "Pause Preview";
+        } else {
+            currentAudio.pause();
+            button.textContent = "Play Preview";
+        }
+    }
+
+    currentAudio.onended = () => {
+        button.textContent = "Play Preview";
+    };
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.preview-button').forEach(button => {
+        button.addEventListener('click', () => handlePreviewButtonClick(button));
+    });
 });

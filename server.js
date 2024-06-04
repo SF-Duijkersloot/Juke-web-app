@@ -303,93 +303,6 @@ async function fetchWebApi(req, endpoint, method, body)
 
 /*==========================================\
 
-                Get top tracks
-
-===========================================*/
-async function getTopTracks(req) 
-{
-    return (await fetchWebApi(
-        req,
-        'v1/me/top/tracks?time_range=short_term&limit=5', 'GET'
-    )).items
-}
-
-app.get('/top-tracks', async (req, res) => 
-{
-    try 
-    {
-        if (!req.session.loggedIn) 
-        {
-            return res.status(401).json({ error: 'User is not logged in' })
-        }
-        
-        const data = await getTopTracks(req)
-        console.log('Top Tracks:', data)
-        res.render('topTracks', { tracks: data, recommendations: []})
-  } 
-  catch (error) 
-  {
-    console.error('Error fetching top tracks:', error)
-    res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
-  }
-})
-
-
-
-
-
-/*==========================================\
-
-            Get recommendations
-
-===========================================*/
-async function getRecommendations(req, seedTracks, limit){
-    try {
-        return (await fetchWebApi(
-          req,
-          `v1/recommendations?limit=${limit}&seed_tracks=${seedTracks.join(',')}`, 'GET'
-        )).tracks
-    } 
-    catch (error) {
-        console.error('Error getting recommendations:', error)
-    }
-  }
-  
-
-app.get('/recommendations', async (req, res) => {
-    try {
-        // const topTracks = await getTopTracks(req)
-        // const seedTracks = topTracks.map(track => track.id)
-        const seedTracks = ['2hRlHXzOf14ArYmOPeAXsa', '1OX04GQl3uusc2Rp4FRG9W']
-        const limit = 3
-        const recommendedTracks = await getRecommendations(req, seedTracks, limit)
-        res.render('recommendations', { tracks: recommendedTracks })
-    } catch (error) {
-        console.error('Error fetching recommendations:', error)
-        res.status(500).json({ error: 'An error occurred while fetching recommendations.' })
-    }
-})
-
-app.get('/new-recommendation', async (req, res) => {
-    try {
-        // const topTracks = await getTopTracks(req)
-        // const seedTracks = topTracks.map(track => track.id)
-        const seedTracks = ['2hRlHXzOf14ArYmOPeAXsa', '1OX04GQl3uusc2Rp4FRG9W']
-        const limit = 1
-        const recommendedTracks = await getRecommendations(req, seedTracks, limit)
-        res.json({ recommendation: recommendedTracks[0] })
-    }
-    catch (error) {
-        console.error('Error fetching new recommendation:', error)
-        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' })
-    }
-})
-
-
-
-
-/*==========================================\
-
               Get user profile
 
 ===========================================*/
@@ -415,6 +328,137 @@ app.get('/profile', async (req, res) => {
         console.error('Error fetching profile:', error)
     }
 })
+
+
+
+
+
+
+/*==========================================\
+
+                Get top tracks
+
+===========================================*/
+async function getTopTracks(req) 
+{
+    return (await fetchWebApi(
+        req,
+        'v1/me/top/tracks?time_range=short_term&limit=5', 'GET'
+    )).items
+}
+
+app.get('/top-tracks', async (req, res) => 
+{
+    try 
+    {
+        if (!req.session.loggedIn) 
+        {
+            return res.status(401).json({ error: 'User is not logged in' })
+        }
+        
+        const data = await getTopTracks(req)
+        // console.log('Top Tracks:', data)
+        res.render('topTracks', { tracks: data, recommendations: []})
+  } 
+  catch (error) 
+  {
+    console.error('Error fetching top tracks:', error)
+    res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
+  }
+})
+
+
+
+
+
+
+/*==========================================\
+
+            Get recommendations
+
+===========================================*/
+async function getRecommendations(req, seedTracks, limit) {
+    try {
+        let approvedRecommendations = [];
+
+        while (approvedRecommendations.length < limit) {
+            const recommendations = (
+                await fetchWebApi(
+                    req,
+                    `v1/recommendations?limit=${limit}&seed_tracks=${seedTracks.join(',')}`,
+                    'GET'
+                )
+            ).tracks;
+
+            const filteredRecommendations = await filterRecommendations(req, recommendations);
+
+            approvedRecommendations = approvedRecommendations.concat(filteredRecommendations).slice(0, limit);
+        }
+
+        return approvedRecommendations;
+    } catch (error) {
+        console.error('Error getting recommendations:', error);
+    }
+}
+
+async function filterRecommendations(req, recommendations) {
+    try {
+        const filteredRecommendations = await Promise.all(recommendations.map(async (track) => {
+            if (!hasPreviewUrl(track)) {
+                console.log(`Track "${track.name}" doesn't have a preview_url`);
+                return false; // Filter out tracks without preview URLs
+            }
+
+            // Check if the track is already registered in the recommendations array of the user
+            const alreadyRegistered = await usersCollection.findOne({
+                _id: req.session.user.id,
+                'recommendations._id': track.id
+            });
+
+            if (alreadyRegistered) {
+                console.log(`Track "${track.name}" already registered.`);
+                return false; // Filter out tracks already registered
+            } else {
+                return true; // Include the track in recommendations
+            }
+        }));
+
+        return recommendations.filter((_, index) => filteredRecommendations[index]);
+    } catch (error) {
+        console.error('Error filtering recommendations:', error);
+    }
+}
+
+function hasPreviewUrl(track) {
+    return track.preview_url !== null && track.preview_url !== '';
+}
+
+app.get('/recommendations', async (req, res) => {
+    try {
+        const seedTracks = ['2hRlHXzOf14ArYmOPeAXsa', '1OX04GQl3uusc2Rp4FRG9W'];
+        const limit = 2;
+        const recommendedTracks = await getRecommendations(req, seedTracks, limit);
+        res.render('recommendations', { tracks: recommendedTracks });
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
+    }
+});
+
+app.get('/new-recommendation', async (req, res) => {
+    try {
+        const seedTracks = ['2hRlHXzOf14ArYmOPeAXsa', '1OX04GQl3uusc2Rp4FRG9W'];
+        const limit = 1;
+        const recommendedTracks = await getRecommendations(req, seedTracks, limit);
+        res.json({ recommendation: recommendedTracks[0] });
+    } catch (error) {
+        console.error('Error fetching new recommendation:', error);
+        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' });
+    }
+});
+
+
+
 
 
 
@@ -491,6 +535,8 @@ app.get('/delete-playlist', async (req, res) => {
         res.status(500).send('An error occurred while deleting the playlist ID')
     }
 })
+
+
 
 
 
