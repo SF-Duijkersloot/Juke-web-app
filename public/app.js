@@ -7,8 +7,9 @@ const handleButtonClick = async (e, action) => {
     const form = e.target.closest('form');
     const trackId = form.querySelector('input[name="track_id"]').value;
     const trackName = form.querySelector('input[name="track_name"]').value;
-    const trackArtists = form.querySelector('input[name="track_artists"]').value;
-    const trackImages = form.querySelector('input[name="track_images"]').value;
+    const trackArtists = JSON.parse(form.querySelector('input[name="track_artists"]').value);
+    const trackImages = JSON.parse(form.querySelector('input[name="track_images"]').value);
+
 
     const res = await fetch(`/${action}`, {
         method: 'POST',
@@ -37,14 +38,14 @@ const handleButtonClick = async (e, action) => {
             ul.appendChild(li);
         }
     }
-};  
+};
 
 async function fetchNewRecommendation() {
     const res = await fetch('/new-recommendation');
   
     if (res.ok) {
-      const data = await res.json();
-      return data.recommendation;
+        const data = await res.json();
+        return data.recommendation;
     }
   
     return null;
@@ -54,20 +55,20 @@ function createRecommendationElement(track) {
     const li = document.createElement('li');
     const imageUrl = track.album.images[0].url;
     const trackName = track.name;
-    const artistName = track.artists[0].name;
     const trackId = track.id;
+    const artistNames = track.artists.map(artist => artist.name);
 
     li.innerHTML = `
         <img src="${imageUrl}" alt="${trackName}">
         <h3>${trackName}</h3>
-        <p>${artistName}</p>
+        <p>${artistNames.join(', ')}</p>
         <form>
-            <input type="hidden" name="track_id" value="${trackId}">
-            <input type="hidden" name="track_name" value="${trackName}">
-            <input type="hidden" name="track_artists" value="${JSON.stringify(track.artists.map(artist => artist.name))}">
-            <input type="hidden" name="track_images" value="${JSON.stringify(track.album.images)}">
-            <button type="button" class="like-button">Like</button>
-            <button type="button" class="dislike-button">Dislike</button>
+            <input type="hidden" name="track_id" value="${trackId}" class="input" />
+            <input type="hidden" name="track_name" value="${trackName}" class="input" />
+            <input type="hidden" name="track_artists" value='${JSON.stringify(artistNames)}' class="input" />
+            <input type="hidden" name="track_images" value='${JSON.stringify(track.album.images)}' class="input" />
+            <button type="submit" name="action" value="like" class="like-button">LIKE</button>
+            <button type="submit" name="action" value="dislike" class="dislike-button">DISLIKE</button>
         </form>
     `;
 

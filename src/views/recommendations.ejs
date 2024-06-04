@@ -32,7 +32,7 @@
                 <li>
                     <img src="<%= track.album.images[0].url %>" alt="Album cover">
                     <h2><%= track.name %></h2>
-                    <p><%= track.artists[0].name %></p>
+                    <p><%= track.artists.map(artist => artist.name).join(", ") %></p>
                     
                     <%# Add a form with hidden input fields to store the necessary track information %>
                     <form>

@@ -173,8 +173,6 @@ app.get('/callback', async (req, res) => {
                     _id: profileData.id,
                     name: profileData.display_name,
                     playlist_id: '',
-                    likedSongs: [],
-                    dislikedSongs: [],
                     recommendations: []
                 }
 
@@ -441,7 +439,7 @@ async function JukePlaylist(req) {
                 'POST', 
                 {
                     name: "My Juke Playlist",
-                    description: "Playlist created by the tutorial on developer.spotify.com",
+                    description: "Playlist created by Juke. to store your liked songs.",
                     public: false
                 }
             )
@@ -473,22 +471,22 @@ app.get('/create-playlist', async (req, res) => {
 
 app.get('/delete-playlist', async (req, res) => {
     try {
-        const userId = req.session.user.id;
+        const userId = req.session.user.id
 
         // Remove the playlist_id field from the user's document
         const result = await usersCollection.updateOne(
             { _id: userId },
             { $unset: { playlist_id: '' } }
-        );
+        )
 
         console.log('Playlist deleted from DB')
 
         res.redirect('/')
     } catch (err) {
-        console.error('Error deleting playlist ID:', err);
-        res.status(500).send('An error occurred while deleting the playlist ID');
+        console.error('Error deleting playlist ID:', err)
+        res.status(500).send('An error occurred while deleting the playlist ID')
     }
-});
+})
 
 
 
@@ -499,16 +497,16 @@ app.get('/delete-playlist', async (req, res) => {
 
 ===========================================*/
 app.post('/like', async (req, res) => {
-    handleSongAction(req, res, 'likedSongs')
-})
+    await handleSongAction(req, res);
+});
 
 app.post('/dislike', async (req, res) => {
-    handleSongAction(req, res, 'dislikedSongs')
-})
+    await handleSongAction(req, res);
+});
 
 // Helper function for handling the "Like" and "Dislike" actions
-async function handleSongAction(req, res, arrayName) {
-    const { track_id } = req.body;
+async function handleSongAction(req, res) {
+    const { track_id, track_name, track_artists, track_images, action } = req.body;
 
     if (!track_id) {
         return res.status(400).send({ status: 'No track_id found' });
@@ -524,35 +522,40 @@ async function handleSongAction(req, res, arrayName) {
             return res.status(404).send({ status: 'error', message: 'User not found' });
         }
 
-        
-                // // Check if the song is already in the specific array (likedSongs or dislikedSongs)
-                // if (user[arrayName].includes(track_id)) {
-                //     console.log('Song already in the array');
-                //     return res.status(200).send({ status: 'success' });
-                // } else {
         // Check if the song is already in the recommendations array
-        if (user.recommendations.includes(track_id)) {
+        const existingTrack = user.recommendations.find(
+            (track) => track._id === track_id
+        );
+        if (existingTrack) {
             console.log('Song in recommendations');
             return res.status(200).send({ status: 'success' });
-        } else {
+        }
+
+        // Create a track object
+        const track = {
+            _id: track_id,
+            name: track_name,
+            artists: track_artists,
+            images: track_images,
+            action: action,
+        };
+
         // Add song to database
         await usersCollection.updateOne(
-                { _id: userId },
-                {
-                    $push: { [arrayName]: track_id },
-                    $push: { recommendations: track_id }
-                }
-            );
-            console.log(`Song added to ${arrayName}`);
-
-            // Add song to playlist if it's liked
-            if (arrayName === 'likedSongs') {
-                addSongToPlaylist(req);
+            { _id: userId },
+            {
+                $push: { recommendations: track },
             }
+        );
+        console.log(`Song added with id: ${track_id}`);
 
-            // Register song in the database
-            registerSong(req);
+        // Add song to playlist if it's liked
+        if (action === 'like') {
+            await addSongToPlaylist(req);
         }
+
+        // Register the song in the songs collection
+        await registerSongCollection(req);
 
         res.status(200).send({ status: 'success' });
     } catch (err) {
@@ -563,31 +566,31 @@ async function handleSongAction(req, res, arrayName) {
 
 async function addSongToPlaylist(req) {
     try {
-        const { track_id } = req.body
+        const { track_id } = req.body;
 
-        const playlistId = await JukePlaylist(req)
+        const playlistId = await JukePlaylist(req);
         const response = await fetchWebApi(
             req,
             `v1/playlists/${playlistId}/tracks`,
             'POST',
             { uris: [`spotify:track:${track_id}`] }
-        )
+        );
 
-        console.log('Song added to playlist', response)
+        console.log('Song added to playlist', response);
     } catch (error) {
-        console.error('Error adding song to playlist:', error)
+        console.error('Error adding song to playlist:', error);
     }
 }
 
-async function registerSong(req) {
+async function registerSongCollection(req) {
     try {
         const { track_id, track_name, track_artists, track_images, action } = req.body;
         const userId = req.session.user.id;
 
         // Check if the song already exists in the songs collection
-        let song = await songsCollection.findOne({ _id: track_id });
-        if (!song) {
-            let songInfo = {
+        let track = await songsCollection.findOne({ _id: track_id });
+        if (!track) {
+            let trackInfo = {
                 _id: track_id,
                 name: track_name,
                 artists: track_artists,
@@ -597,43 +600,49 @@ async function registerSong(req) {
             };
 
             if (action === 'like') {
-                if (!songInfo.likes.includes(userId)) {
-                    songInfo.likes.push(userId)
-                }
+                trackInfo.likes.push(userId);
             } else if (action === 'dislike') {
-                if (!songInfo.dislikes.includes(userId)) {
-                    songInfo.dislikes.push(userId);
-                }
+                trackInfo.dislikes.push(userId);
             } else {
                 console.error('Invalid action');
             }
 
-            await songsCollection.insertOne(songInfo);
+            await songsCollection.insertOne(trackInfo);
             console.log('Song added to songs collection');
         } else {
             console.log('Song already exists in the songs collection');
 
             // Update swipes based on the action
-            if (action === 'like') {
-                if (!song.likes.includes(userId)) {
-                    await songsCollection.updateOne(
-                        { _id: track_id },
-                        { $push: { likes: userId }, $inc: { 'swipes.likes': 1 } }
-                    );
-                }
-            } else if (action === 'dislike') {
-                if (!song.dislikes.includes(userId)) {
-                    await songsCollection.updateOne(
-                        { _id: track_id },
-                        { $push: { dislikes: userId }, $inc: { 'swipes.dislikes': 1 } }
-                    );
-                }
+            if (action === 'like' && !track.likes.includes(userId)) {
+                await songsCollection.updateOne(
+                    { _id: track_id },
+                    { $push: { likes: userId } }
+                );
+            } else if (action === 'dislike' && !track.dislikes.includes(userId)) {
+                await songsCollection.updateOne(
+                    { _id: track_id },
+                    { $push: { dislikes: userId } }
+                );
             }
         }
     } catch (error) {
         console.error('Error registering song:', error);
     }
 }
+
+
+
+app.get('/my-activity', async (req, res) => {
+    try {
+        const userId = req.session.user.id
+        const user = await usersCollection.findOne({ _id: userId })
+
+        res.render('activity', { activity: user.recommendations })
+    }
+    catch (error) {
+        console.error('Error fetching activity:', error)
+    }
+})
 
 
 app.listen(port, () => {
