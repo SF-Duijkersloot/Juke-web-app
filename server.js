@@ -689,6 +689,14 @@ async function registerSongCollection(req) {
 
 
 
+
+
+
+/*==========================================\
+
+              Show user activity
+
+===========================================*/
 app.get('/my-activity', async (req, res) => {
     try {
         const userId = req.session.user.id
@@ -702,14 +710,13 @@ app.get('/my-activity', async (req, res) => {
 })
 
 
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`)
-  })
+
+
 
 
 /*==========================================\
 
-        Search bar
+                  Search bar
 
 ===========================================*/
 app.get('/search', async (req, res) => {
@@ -733,3 +740,10 @@ app.get('/search', async (req, res) => {
     }
 });
 
+
+
+
+
+app.listen(port, () => {
+    console.log(`Server listening at http://localhost:${port}`)
+  })
