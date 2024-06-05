@@ -705,3 +705,31 @@ app.get('/my-activity', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`)
   })
+
+
+/*==========================================\
+
+        Search bar
+
+===========================================*/
+app.get('/search', async (req, res) => {
+    const query = req.query.q;
+
+    if (!query) {
+        return res.status(400).send({ error: 'No query provided' });
+    }
+
+    try {
+        const results = await fetchWebApi(
+            req,
+            `v1/search?q=${encodeURIComponent(query)}&type=track,artist,album&limit=10`,
+            'GET'
+        );
+
+        res.render('searchResults', { results: results, query: query });
+    } catch (error) {
+        console.error('Error performing search:', error);
+        res.status(500).json({ error: 'An error occurred while performing search.' });
+    }
+});
+
