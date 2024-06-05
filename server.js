@@ -377,25 +377,27 @@ app.get('/top-tracks', async (req, res) =>
             Get recommendations
 
 ===========================================*/
+
 async function getRecommendations(req, seedTracks, limit) {
     try {
         let approvedRecommendations = [];
+        let remainingLimit = limit;
 
-        while (approvedRecommendations.length < limit) {
+        while (remainingLimit > 0) {
             const recommendations = (
                 await fetchWebApi(
                     req,
-                    `v1/recommendations?limit=${limit}&seed_tracks=${seedTracks.join(',')}`,
+                    `v1/recommendations?limit=${remainingLimit}&seed_tracks=${seedTracks.join(',')}`,
                     'GET'
                 )
             ).tracks;
 
             const filteredRecommendations = await filterRecommendations(req, recommendations);
-
-            approvedRecommendations = approvedRecommendations.concat(filteredRecommendations).slice(0, limit);
+            approvedRecommendations.push(...filteredRecommendations);
+            remainingLimit = limit - approvedRecommendations.length;
         }
 
-        return approvedRecommendations;
+        return approvedRecommendations.slice(0, limit);
     } catch (error) {
         console.error('Error getting recommendations:', error);
     }
@@ -403,27 +405,31 @@ async function getRecommendations(req, seedTracks, limit) {
 
 async function filterRecommendations(req, recommendations) {
     try {
-        const filteredRecommendations = await Promise.all(recommendations.map(async (track) => {
-            if (!hasPreviewUrl(track)) {
-                console.log(`Track "${track.name}" doesn't have a preview_url`);
-                return false; // Filter out tracks without preview URLs
-            }
+        const filteredRecommendations = await Promise.all(
+            recommendations.map(async (track) => {
+                if (!hasPreviewUrl(track)) {
+                    console.log(`Track "${track.name}" doesn't have a preview_url`);
+                    return null;
+                }
 
-            // Check if the track is already registered in the recommendations array of the user
-            const alreadyRegistered = await usersCollection.findOne({
-                _id: req.session.user.id,
-                'recommendations._id': track.id
-            });
+                const userRecommendations = await usersCollection.findOne(
+                    {
+                        _id: req.session.user.id,
+                        'recommendations._id': track.id
+                    },
+                    { projection: { _id: 1 } }
+                );
 
-            if (alreadyRegistered) {
-                console.log(`Track "${track.name}" already registered.`);
-                return false; // Filter out tracks already registered
-            } else {
-                return true; // Include the track in recommendations
-            }
-        }));
+                if (userRecommendations) {
+                    console.log(`Track "${track.name}" already registered.`);
+                    return null;
+                }
 
-        return recommendations.filter((_, index) => filteredRecommendations[index]);
+                return track;
+            })
+        );
+
+        return filteredRecommendations.filter(Boolean);
     } catch (error) {
         console.error('Error filtering recommendations:', error);
     }
