@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    img {
+        width: 250px;
+    }
+    ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        list-style-type: none;
+        padding: 0;
+        gap: 5em;
+    }
+    li {
+        width: 19em;
+        text-align: center;
+    }
+</style>
+<body>
+    <!-- Show the activity of the recommendations of the user, each song object is inside the recommendations array -->
+    <h1>My activity</h1>
+    <ul>
+        <% activity.forEach(track => { %>
+            <li>
+                <p><%= track.name %></p>
+                <p><%= track.artists.join(", ") %></p>
+                <p><%= track.action %></p>
+                <img src="<%= track.images[0].url %>" alt="<%= track.name %>">
+            </li>
+        <% }) %>
+    </body>
+</html>

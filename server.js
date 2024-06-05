@@ -173,8 +173,11 @@ app.get('/callback', async (req, res) => {
                     _id: profileData.id,
                     name: profileData.display_name,
                     playlist_id: '',
-                    likedSongs: [],
-                    dislikedSongs: []
+                    recommendations: [],
+                    swipes: {
+                        likes: 0,
+                        dislikes: 0
+                    }
                 }
 
                 // Check if user exists in the database
@@ -300,71 +303,6 @@ async function fetchWebApi(req, endpoint, method, body)
 
 /*==========================================\
 
-                Get top tracks
-
-===========================================*/
-async function getTopTracks(req) 
-{
-    return (await fetchWebApi(
-        req,
-        'v1/me/top/tracks?time_range=short_term&limit=5', 'GET'
-    )).items
-}
-
-app.get('/top-tracks', async (req, res) => 
-{
-    try 
-    {
-        if (!req.session.loggedIn) 
-        {
-            return res.status(401).json({ error: 'User is not logged in' })
-        }
-        
-        const data = await getTopTracks(req)
-        console.log('Top Tracks:', data)
-        res.render('topTracks', { tracks: data, recommendations: []})
-  } 
-  catch (error) 
-  {
-    console.error('Error fetching top tracks:', error)
-    res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
-  }
-})
-
-
-
-
-
-/*==========================================\
-
-            Get recommendations
-
-===========================================*/
-async function getRecommendations(req, topTracksIds){
-    return (await fetchWebApi(
-      req,
-      `v1/recommendations?limit=25&seed_tracks=${topTracksIds.join(',')}`, 'GET'
-    )).tracks
-  }
-  
-
-app.get('/recommendations', async (req, res) => {
-    try {
-        const topTracks = await getTopTracks(req)
-        const topTracksIds = topTracks.map(track => track.id)
-        const recommendedTracks = await getRecommendations(req, topTracksIds)
-        res.render('recommendations', { tracks: recommendedTracks })
-    } catch (error) {
-        console.error('Error fetching recommendations:', error)
-        res.status(500).json({ error: 'An error occurred while fetching recommendations.' })
-    }
-})
-
-
-
-
-/*==========================================\
-
               Get user profile
 
 ===========================================*/
@@ -394,6 +332,143 @@ app.get('/profile', async (req, res) => {
 
 
 
+
+
+/*==========================================\
+
+                Get top tracks
+
+===========================================*/
+async function getTopTracks(req) 
+{
+    return (await fetchWebApi(
+        req,
+        'v1/me/top/tracks?time_range=short_term&limit=5', 'GET'
+    )).items
+}
+
+app.get('/top-tracks', async (req, res) => 
+{
+    try 
+    {
+        if (!req.session.loggedIn) 
+        {
+            return res.status(401).json({ error: 'User is not logged in' })
+        }
+        
+        const data = await getTopTracks(req)
+        // console.log('Top Tracks:', data)
+        res.render('topTracks', { tracks: data, recommendations: []})
+  } 
+  catch (error) 
+  {
+    console.error('Error fetching top tracks:', error)
+    res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
+  }
+})
+
+
+
+
+
+
+/*==========================================\
+
+            Get recommendations
+
+===========================================*/
+
+async function getRecommendations(req, seedTracks, limit) {
+    try {
+        let approvedRecommendations = [];
+        let remainingLimit = limit;
+
+        while (remainingLimit > 0) {
+            const recommendations = (
+                await fetchWebApi(
+                    req,
+                    `v1/recommendations?limit=${remainingLimit}&seed_tracks=${seedTracks.join(',')}`,
+                    'GET'
+                )
+            ).tracks;
+
+            const filteredRecommendations = await filterRecommendations(req, recommendations);
+            approvedRecommendations.push(...filteredRecommendations);
+            remainingLimit = limit - approvedRecommendations.length;
+        }
+
+        return approvedRecommendations.slice(0, limit);
+    } catch (error) {
+        console.error('Error getting recommendations:', error);
+    }
+}
+
+async function filterRecommendations(req, recommendations) {
+    try {
+        const filteredRecommendations = await Promise.all(
+            recommendations.map(async (track) => {
+                if (!hasPreviewUrl(track)) {
+                    console.log(`Track "${track.name}" doesn't have a preview_url`);
+                    return null;
+                }
+
+                const userRecommendations = await usersCollection.findOne(
+                    {
+                        _id: req.session.user.id,
+                        'recommendations._id': track.id
+                    },
+                    { projection: { _id: 1 } }
+                );
+
+                if (userRecommendations) {
+                    console.log(`Track "${track.name}" already registered.`);
+                    return null;
+                }
+
+                return track;
+            })
+        );
+
+        return filteredRecommendations.filter(Boolean);
+    } catch (error) {
+        console.error('Error filtering recommendations:', error);
+    }
+}
+
+function hasPreviewUrl(track) {
+    return track.preview_url !== null && track.preview_url !== '';
+}
+
+app.get('/recommendations', async (req, res) => {
+    try {
+        const seedTracks = ['2hRlHXzOf14ArYmOPeAXsa', '1OX04GQl3uusc2Rp4FRG9W'];
+        const limit = 2;
+        const recommendedTracks = await getRecommendations(req, seedTracks, limit);
+        res.render('recommendations', { tracks: recommendedTracks });
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
+    }
+});
+
+app.get('/new-recommendation', async (req, res) => {
+    try {
+        const seedTracks = ['2hRlHXzOf14ArYmOPeAXsa', '1OX04GQl3uusc2Rp4FRG9W'];
+        const limit = 1;
+        const recommendedTracks = await getRecommendations(req, seedTracks, limit);
+        res.json({ recommendation: recommendedTracks[0] });
+    } catch (error) {
+        console.error('Error fetching new recommendation:', error);
+        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' });
+    }
+});
+
+
+
+
+
+
+
 /*==========================================\
 
               Playlist handling
@@ -418,7 +493,7 @@ async function JukePlaylist(req) {
                 'POST', 
                 {
                     name: "My Juke Playlist",
-                    description: "Playlist created by the tutorial on developer.spotify.com",
+                    description: "Playlist created by Juke. to store your liked songs.",
                     public: false
                 }
             )
@@ -450,22 +525,24 @@ app.get('/create-playlist', async (req, res) => {
 
 app.get('/delete-playlist', async (req, res) => {
     try {
-        const userId = req.session.user.id;
+        const userId = req.session.user.id
 
         // Remove the playlist_id field from the user's document
         const result = await usersCollection.updateOne(
             { _id: userId },
             { $unset: { playlist_id: '' } }
-        );
+        )
 
         console.log('Playlist deleted from DB')
 
         res.redirect('/')
     } catch (err) {
-        console.error('Error deleting playlist ID:', err);
-        res.status(500).send('An error occurred while deleting the playlist ID');
+        console.error('Error deleting playlist ID:', err)
+        res.status(500).send('An error occurred while deleting the playlist ID')
     }
-});
+})
+
+
 
 
 
@@ -475,19 +552,17 @@ app.get('/delete-playlist', async (req, res) => {
         Like and Dislike handling
 
 ===========================================*/
-
 app.post('/like', async (req, res) => {
-    handleSongAction(req, res, 'likedSongs')
-    // addSongToPlaylist(req)
+    await handleSongAction(req, res)
 })
 
 app.post('/dislike', async (req, res) => {
-    handleSongAction(req, res, 'dislikedSongs')
+    await handleSongAction(req, res)
 })
 
 // Helper function for handling the "Like" and "Dislike" actions
-async function handleSongAction(req, res, arrayName) {
-    const { track_id } = req.body
+async function handleSongAction(req, res) {
+    const { track_id, track_name, track_artists, track_images, action } = req.body
 
     if (!track_id) {
         return res.status(400).send({ status: 'No track_id found' })
@@ -498,26 +573,46 @@ async function handleSongAction(req, res, arrayName) {
 
         // Check if the user exists in the database
         const user = await usersCollection.findOne({ _id: userId })
+
         if (!user) {
             return res.status(404).send({ status: 'error', message: 'User not found' })
         }
-        
-        // Check if the song is already in the user's liked or disliked songs array
-        if (user.likedSongs.includes(track_id) || user.dislikedSongs.includes(track_id)) {
-            console.error('Song already liked or disliked')
-        } else {
-            // Add song to database
-            await usersCollection.updateOne(
-                { _id: userId },
-                { $push: { [arrayName]: track_id} }
-            )
-            console.log('Song added to', [arrayName])
 
-            // Add song to playlist if its liked
-            if (arrayName === 'likedSongs') {
-                addSongToPlaylist(req)
-            }
+        // Check if the song is already in the recommendations array
+        const existingTrack = user.recommendations.find(
+            (track) => track._id === track_id
+        )
+        if (existingTrack) {
+            console.log('Song in recommendations')
+            return res.status(200).send({ status: 'success' })
         }
+
+        // Create a track object
+        const track = {
+            _id: track_id,
+            name: track_name,
+            artists: track_artists,
+            images: track_images,
+            action: action,
+        }
+
+        // Add info to database
+        await usersCollection.updateOne(
+            { _id: userId },
+            {
+                $push: { recommendations: track },
+                $inc: action === 'like' ? { 'swipes.likes': 1 } : { 'swipes.dislikes': 1 },
+            }
+        )
+        console.log(`Song added with id: ${track_id}`)
+
+        // Add song to playlist if it's liked
+        if (action === 'like') {
+            await addSongToPlaylist(req)
+        }
+
+        // Register the song in the songs collection
+        await registerSongCollection(req)
 
         res.status(200).send({ status: 'success' })
     } catch (err) {
@@ -543,6 +638,68 @@ async function addSongToPlaylist(req) {
         console.error('Error adding song to playlist:', error)
     }
 }
+
+async function registerSongCollection(req) {
+    try {
+        const { track_id, track_name, track_artists, track_images, action } = req.body
+        const userId = req.session.user.id
+
+        // Check if the song already exists in the songs collection
+        let track = await songsCollection.findOne({ _id: track_id })
+        if (!track) {
+            let trackInfo = {
+                _id: track_id,
+                name: track_name,
+                artists: track_artists,
+                images: track_images,
+                likes: [],
+                dislikes: []
+            }
+
+            if (action === 'like') {
+                trackInfo.likes.push(userId)
+            } else if (action === 'dislike') {
+                trackInfo.dislikes.push(userId)
+            } else {
+                console.error('Invalid action')
+            }
+
+            await songsCollection.insertOne(trackInfo)
+            console.log('Song added to songs collection')
+        } else {
+            console.log('Song already exists in the songs collection')
+
+            // Update swipes based on the action
+            if (action === 'like' && !track.likes.includes(userId)) {
+                await songsCollection.updateOne(
+                    { _id: track_id },
+                    { $push: { likes: userId } }
+                )
+            } else if (action === 'dislike' && !track.dislikes.includes(userId)) {
+                await songsCollection.updateOne(
+                    { _id: track_id },
+                    { $push: { dislikes: userId } }
+                )
+            }
+        }
+    } catch (error) {
+        console.error('Error registering song:', error)
+    }
+}
+
+
+
+app.get('/my-activity', async (req, res) => {
+    try {
+        const userId = req.session.user.id
+        const user = await usersCollection.findOne({ _id: userId })
+
+        res.render('activity', { activity: user.recommendations })
+    }
+    catch (error) {
+        console.error('Error fetching activity:', error)
+    }
+})
 
 
 app.listen(port, () => {
