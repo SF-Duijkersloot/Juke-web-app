@@ -24,6 +24,10 @@ app.get('/genres', (req, res) => {
     res.render('pages/genres')
 }) 
 
+app.get('/profiel', (req, res) => {
+    res.render('pages/profiel')
+}) 
+
 app.get('/connect', (req, res) => {
     res.render('connect')
 }) 

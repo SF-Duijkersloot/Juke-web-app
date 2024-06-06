@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profiel</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <header>
+        <%- include('../partials/nav') %>
+        <h1>Profiel</h1>
+    </header>
+
+    <main>
+        <section id="user">
+            <img src="images/pop.jpg">
+            <div>
+                <h3>Username</h3>
+                <p>bio</p>
+            </div>
+            <button>settings</button>
+        </section>
+
+        <section id="playlists">
+            <a href="liked"></a>
+            <a href="disliked"></a>
+        </section>
+
+        <section id="stats">
+            <h2>Statistieken</h2>
+            <div id="statsLijst">
+                <div>
+                    <h4>145</h4>
+                    <p>swipes</p>
+                </div>
+                <div>
+                    <h4>70</h4>
+                    <p>geliket</p>
+                </div>
+                <div>
+                    <h4>75</h4>
+                    <p>gedisliket</p>
+                </div>
+            </div>
+            <h3>Jouw top genres</h3>
+            <div id="statsGenre">
+                <p>Pop</p>
+                <p>Punk</p>
+                <p>Rock</p>
+                <p>R&B</p>
+                <p>Indie</p>
+                <p>Hip-Hop</p>
+            </div>
+        </section>
+
+        <section id="activiteit">
+            <h2>Activiteit</h2>
+            <div>
+                <div class="card">
+                    <img src="images/pop.jpg">
+                    <div>
+                        <h4>Europapa</h4>
+                        <p>Joost Klein</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="images/pop.jpg">
+                    <div>
+                        <h4>Dani California blasdlkasldkalskdla</h4>
+                        <p>Red Hot Chili Peppers</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="images/pop.jpg">
+                    <div>
+                        <h4>Lost</h4>
+                        <p>Frank Ocean</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="images/pop.jpg">
+                    <div>
+                        <h4>Dani California</h4>
+                        <p>Red Hot Chili Peppers</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script defer src="/app.js"></script>
+</body>
+
+</html>
