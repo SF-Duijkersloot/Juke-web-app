@@ -616,11 +616,11 @@ body{
         }
 /* ---------------------verkennen------------------- */
        #main{
-        width: 90%;
+        width: 80%;
         float: right;
        }
     .verkennen{
-            width: 60%;
+            width: 80%;
             margin-top: 0;
         }
         .verkennen p{
@@ -628,14 +628,33 @@ body{
             color: var(--primary);
         }
         .card{
+            display: flex;
+            align-items: center;
             margin-top: 0;
+            width: 100%;
+            height: 60vh;
+        }
+        .card article {
+            box-shadow: none;
+            border-radius: 1em;
+            float: right;
+            width: 70%;
         }
         .card article > header {
-            height: 70%;
+            height: 100%;
+            opacity: .5;
+            z-index: -1;
+
         }
         
-        .card section > div > h2 {
+        .card section > div  {
             margin: 0;
+            margin-top: -8em;
+            z-index: 2;
+        }
+        .card section > aside > p {
+            margin: 0;
+            margin-top: -8em;
         }
         
         .buttons {
