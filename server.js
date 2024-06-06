@@ -743,6 +743,25 @@ app.get('/search', async (req, res) => {
 });
 
 
+app.get('/zoek', (req, res) => {
+    res.render('pages/zoek')
+})
+
+app.get('/genres', (req, res) => {
+    res.render('pages/genres')
+}) 
+
+app.get('/profiel', (req, res) => {
+    res.render('pages/profiel')
+}) 
+
+app.get('/connect', (req, res) => {
+    res.render('pages/connect')
+}) 
+
+app.get('/verkennen', (req, res) => {
+    res.render('pages/verkennen')
+}) 
 
 
 
