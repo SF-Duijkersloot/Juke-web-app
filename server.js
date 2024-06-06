@@ -220,7 +220,11 @@ app.get('/callback', async (req, res) => {
 ===========================================*/
 app.get('/', (req, res) => 
 {
-    res.render('index', { loggedIn: req.session.loggedIn })
+    if (req.session.loggedIn) {
+        res.render('index', { loggedIn: req.session.loggedIn })
+    } else {
+        res.render('pages/connect')
+    }
 })
 
 app.get('/home', async (req, res) => {
@@ -755,12 +759,13 @@ app.get('/profiel', (req, res) => {
     res.render('pages/profiel')
 }) 
 
-app.get('/connect', (req, res) => {
-    res.render('pages/connect')
-}) 
 
 app.get('/verkennen', (req, res) => {
     res.render('pages/verkennen')
+}) 
+
+app.get('/connect', (req, res) => {
+    res.render('pages/connect')
 }) 
 
 

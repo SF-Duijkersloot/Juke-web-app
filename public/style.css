@@ -432,7 +432,7 @@ button {
     font-size: 1.1em;
     box-shadow: .1em .1em 1em var(--grey);
     z-index: 2;
-
+    text-decoration: none;
 }
 
 .Spotify-btn img{
