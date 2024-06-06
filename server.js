@@ -768,6 +768,9 @@ app.get('/connect', (req, res) => {
     res.render('pages/connect')
 }) 
 
+app.get('/likes', (req, res) => {
+    res.render('pages/likes')
+}) 
 
 
 app.listen(port, () => {
