@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juke prototype</title>
+</head>
+<body>
+    <h1>Welcome bij Juke</h1>
+    <% if (!loggedIn) { %>
+        <a href="/login">Log in with Spotify</a>
+        <a href="/session-test">Log session token</a>
+    <% } %>
+    
+    <% if (loggedIn) { %>
+        <a href="/profile">Get profile</a>
+        <a href="/logout">Logout</a>
+        <a href="/my-activity">View my activity</a>
+        <a href="/top-tracks">View top tracks</a>
+        <a href="/session-test">Log session token</a>
+        <a href="/create-playlist">Create a playlist</a>
+        <a href="/delete-playlist">Delete playlis from DB</a>
+        <a href="/get-sess-user">Get sess user</a>
+
+        <!-- Zoekformulier -->
+        <form action="/search" method="get">
+            <input type="text" name="q" placeholder="Search for music...">
+            <button type="submit">Search</button>
+        </form>
+    <% } %>
+    <script src="app.js"></script>
+</body>
+</html>
