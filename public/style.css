@@ -448,12 +448,9 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
-   
 }
 
 .buttons button {
-    width: 5em;
-    height: 5em;
     border: none;
     border-radius: 50%;
     background-color:var(--dark);
@@ -462,12 +459,21 @@ header {
     align-items: center;
     cursor: pointer;
     transition: background-color 0.3s ease;
-   margin: 0 1em;
+    margin:0 1em;
 }
 
-.buttons button img{
+.buttons button img {
     width: 2.5em;
     height: 2.5em;
+}
+.dislike-btn, .like-btn {
+    width: 5em;
+    height: 5em;
+}
+
+.play-btn {
+    width: 6em;
+    height: 6em;
 }
 
 /* -----------------media query-------------- */
@@ -664,7 +670,6 @@ body{
             bottom: 2em;
             display: flex;
             justify-content: center;
-            align-items: center;
-           
+            align-items: center;  
         }
     }

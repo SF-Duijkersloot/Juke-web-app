@@ -141,3 +141,5 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Play song:', songs[currentSongIndex]);
     });
 });
+
+
