@@ -7,6 +7,7 @@
     --accent: #FFD774;
     --dark: #292929;
     --light: #FAFAFC;
+    --grey: #8b8b8b;
 
     /* Typografie */
     --d1: 3em;
@@ -42,6 +43,7 @@ h1 {
 h2 {
     font-size: var(--h2);
     font-weight: bold;
+    color: #000;
 }
 
 h3 {
@@ -68,9 +70,7 @@ button {
     font-family: 'Poppins', sans-serif;
 }
 
-/*/////////////*/
 /* Zoek-pagina */
-/*/////////////*/
 
 #searchHeader {
     border-bottom: solid 0.1em var(--dark)
@@ -163,9 +163,7 @@ button {
     height: auto;
 }
 
-/*////////////////*/
 /* profiel-pagina */
-/*////////////////*/
 
 #user {
     display: flex;
@@ -244,13 +242,13 @@ button {
     margin-right: 1em;
 }
 
-.card {
+.cardProfiel {
     aspect-ratio: 1 / 1;
     border-radius: 0.5em;
     max-width: 100%;
 }
 
-.card img {
+.cardProfiel img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -258,7 +256,7 @@ button {
     border-radius: 0.5em 0.5em 0 0;
 }
 
-.card div {
+.cardProfiel div {
     padding: 0.2em 0.5em;
     background: var(--primary);
     height: 35%;
@@ -267,13 +265,502 @@ button {
     border-radius: 0 0 0.5em 0.5em;
 }
 
-.card h4 {
+.cardProfiel h4 {
     overflow: hidden;
     white-space: nowrap;
     width: 100%;
     text-overflow: ellipsis;
 }
 
-.card p {
+.cardProfiel p {
     font-size: 0.8em;
 }
+
+/* -----------------nav------------------------ */
+.dropdown h2{
+    display: none;
+}
+
+.dropdown {
+    position: absolute; 
+    bottom: 1em; 
+    right: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.navigatieButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    background-color: var(--primary);
+    border: none;
+    width: 4em;
+    height: 4em;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+}
+
+.navigatieButton span {
+    position: absolute;
+    width: 1.8em;
+    height: .25em;
+    background-color: var(--light);
+    transition: .3s;
+}
+
+.navigatieButton span:nth-of-type(1) {
+    transform: translateY(-.6em);
+}
+
+.navigatieButton span:nth-of-type(2) {
+    transform: translateY(0em);
+}
+
+.navigatieButton span:nth-of-type(3) {
+    transform: translateY(.6em);
+}
+
+.navigatieContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    bottom: 5em; 
+    background-color: var(--primary);
+    border-radius: 2em;
+    z-index: 1;
+    max-height: 0;
+    overflow: hidden;
+    transition: 0.5s ease-out;
+}
+
+.navigatieContent.open {
+    max-height: 500px; 
+    padding: .5em;
+}
+
+.navigatieContent a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: .5em;
+    background-color: var(--light);
+    width: 3em;
+    height: 3em;
+    opacity: 0;
+    transition: transform 0.4s ease-in-out, opacity 0.3s ease-in;
+}
+
+.navigatieContent a img {
+    max-width: 2em;
+    max-height: 2em;
+}
+
+.navigatieContent p {
+    display: none;
+ }
+ 
+
+/* -------------------open--------------------------- */
+
+.navigatieButton.open span:nth-of-type(1) {
+    transform: rotate(45deg);
+}
+
+.navigatieButton.open span:nth-of-type(2) {
+    display: none;
+}
+
+.navigatieButton.open span:nth-of-type(3) {
+    transform: rotate(-45deg);
+}
+
+.navigatieContent.open a {
+    transform: translateY(0);
+    opacity: 1;
+}
+.navigatieContent.open p {
+   display: none;
+}
+
+.navigatieContent.open a:nth-of-type(1) {
+    transition-delay: 0.1s;
+}
+
+.navigatieContent.open a:nth-of-type(2) {
+    transition-delay: 0.15s;
+}
+
+.navigatieContent.open a:nth-of-type(3) {
+    transition-delay: 0.2s;
+}
+
+
+/* ----------------connectpage-------------- */
+
+
+.aanmelden{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3em;
+}
+
+.aanmelden p{
+    text-align: center;
+    width: 80%;
+    padding: 2em 0;
+}
+
+.Spotify-btn{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    border-radius: 1em;
+    background-color: var(--primary);
+    width: 80%;
+    padding: .5em;
+    font-family: 'Poppins';
+    color: var(--light);
+    font-size: 1.1em;
+    box-shadow: .1em .1em 1em var(--grey);
+    z-index: 2;
+
+}
+
+.Spotify-btn img{
+    width: 2em;
+    height: 2em;
+    padding: 0 .2em;
+}
+
+#background{
+    background-color: var(--dark);
+    width: 100%;
+    padding: 2em 0;
+    border-radius: 6em 0 0 0;
+}
+.img-animatie{
+    display: block;
+    margin: 2em auto;
+    /* margin-left: auto;
+    margin-right: auto; */
+    width: 10em;
+    animation: rotation 8s infinite ease;
+    animation-timing-function: linear;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100vw;
+    margin-left: calc(1em); 
+    height: auto;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(90deg);
+    }
+    26% {
+        transform: rotate(80deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* -------------------swipepagina--------------- */
+
+#main{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.verkennen{
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin-top: 2em;
+}
+.verkennen p{
+    margin-top: -.5em;
+    color: var(--primary);
+}
+.card{
+    width: 18em;
+    height: 25em;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center;
+    margin-top: 2em;
+}
+
+.card article {
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1em;
+    box-shadow: 0 .05em .5em var(--grey);
+    overflow: hidden;
+    background: var(--light);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.card article > header {
+    width: 100%;
+    height: 75%;
+    background-size: cover;
+    background-position: center;
+}
+
+.card article > section {
+    display: flex;
+    justify-content: space-between;
+    padding: .5em 1em;
+}
+
+.card article > section > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.card section > div > h3 {
+    margin: 0;
+}
+
+.card section > div > p {
+    margin-top: -.3em;
+    margin-bottom: 0;
+}
+.card section > aside{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.card section > aside > p {
+    margin: 0;
+}
+
+.buttons {
+    position: absolute;
+    bottom: 8em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+   
+}
+
+.buttons button {
+    width: 5em;
+    height: 5em;
+    border: none;
+    border-radius: 50%;
+    background-color:var(--dark);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+   margin: 0 1em;
+}
+
+.buttons button img{
+    width: 2.5em;
+    height: 2.5em;
+}
+
+/* -----------------media query-------------- */
+
+@media (min-width: 992px) {
+    .icon {
+        filter: invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(250%) contrast(103%);
+    }
+/* -------------------nav----------------- */
+body{
+    height:100vh;
+}
+.dropdown h2{
+    display: contents;
+    color: var(--light);
+}
+
+.dropdown {
+    top:1em; 
+    left: 1em;
+    bottom: 1em;
+    align-items: start;
+    width:20%;
+    padding: 1em 2em;
+    background-color: var(--dark);
+    border-radius: 1em;
+    z-index: 200;
+}
+
+.navigatieButton {
+    justify-content: start;
+    align-items: start;
+    background-color: transparent;
+    width: 100%;
+    height: 100vh;
+}
+
+.navigatieButton span {
+    display: none;
+}
+
+.navigatieContent {
+    align-items: center;
+    justify-content: start;
+    top: 7em;
+    left: 0;
+    background-color: transparent;
+    z-index: 0;
+    overflow: visible;
+    transition: none;
+    width: 100%;
+}
+
+.navigatieContent a {
+    align-items: center;
+    justify-content: start;
+    border-radius: .4em;
+    background-color: var(--primary);
+    padding: .5em;
+    opacity: 1;
+    transition: none;
+    width: 80%;
+    text-decoration: none;
+
+}
+
+.navigatieContent a:visited {
+   text-decoration: none;
+   color: var(--light);
+}
+
+.navigatieContent a img {
+    margin-right: .5em;
+}
+
+.navigatieContent p {
+    display: contents;
+    color: var(--light);
+ }
+
+    /* -------------------aanmeldpagina--------------- */
+    .aanmelden{
+        margin-top: 7em;
+        margin-left: 4em;
+        width: 50%;
+        text-align: start;
+        display: flex;
+        justify-content: start;
+        align-items: start;
+    }
+    .aanmelden img{
+        width: 60%;
+    }
+    .aanmelden p{
+        text-align: start;
+        width: 60%;
+        padding: 2em 0;
+        margin-bottom: 3em;
+    }
+    
+    .Spotify-btn{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: none;
+        border-radius: .5em;
+        background-color: var(--primary);
+        width: 60%;
+        padding: .5em;
+        font-family: 'Poppins';
+        color: var(--light);
+        font-size: 1.1em;
+        box-shadow: .1em .1em 1em var(--grey);
+    
+    }
+    
+    .Spotify-btn img{
+        width: 2em;
+        height: 2em;
+        padding: 0 .2em;
+    }
+    
+    .img-animatie{
+        display: flex;
+        margin: 0 auto;
+        justify-content: center;
+        align-items: end;
+        width: 50%;
+        animation: rotation 10s infinite ease;
+        animation-timing-function: linear;
+    
+    }
+
+    #background{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+        border-radius: 10em 0 0 0;
+        height: 90vh;
+    }
+    .footer {
+        right: 0;
+        left: 50vw;
+        height: 95vh;
+        }
+/* ---------------------verkennen------------------- */
+       #main{
+        width: 90%;
+        float: right;
+       }
+    .verkennen{
+            width: 60%;
+            margin-top: 0;
+        }
+        .verkennen p{
+            margin-top: -.5em;
+            color: var(--primary);
+        }
+        .card{
+            margin-top: 0;
+        }
+        .card article > header {
+            height: 70%;
+        }
+        
+        .card section > div > h2 {
+            margin: 0;
+        }
+        
+        .buttons {
+            position: absolute;
+            bottom: 4em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+           
+        }
+    }
+
