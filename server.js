@@ -441,7 +441,8 @@ function hasPreviewUrl(track) {
 
 app.get('/recommendations', async (req, res) => {
     try {
-        const seedTracks = ['2hRlHXzOf14ArYmOPeAXsa', '1OX04GQl3uusc2Rp4FRG9W'];
+        const topTracks = await getTopTracks(req);
+        const seedTracks = topTracks.map((track) => track.id);
         const limit = 2;
         const recommendedTracks = await getRecommendations(req, seedTracks, limit);
         res.render('recommendations', { tracks: recommendedTracks });
@@ -453,7 +454,8 @@ app.get('/recommendations', async (req, res) => {
 
 app.get('/new-recommendation', async (req, res) => {
     try {
-        const seedTracks = ['2hRlHXzOf14ArYmOPeAXsa', '1OX04GQl3uusc2Rp4FRG9W'];
+        const topTracks = await getTopTracks(req);
+        const seedTracks = topTracks.map((track) => track.id);
         const limit = 1;
         const recommendedTracks = await getRecommendations(req, seedTracks, limit);
         res.json({ recommendation: recommendedTracks[0] });
