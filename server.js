@@ -45,6 +45,7 @@ app
 ===========================================*/
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const { create } = require('domain')
+const e = require('express')
 // Construct URL used to connect to database from info in the .env file
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`
 // Create a MongoClient
@@ -194,8 +195,9 @@ app.get('/callback', async (req, res) => {
                     if (err) {
                         console.error('Session save error:', err)
                         res.redirect('/#' + querystring.stringify({ error: 'session_save_error' }))
-                    } else {
-                        res.redirect('/home')
+                    }
+                    else {
+                        res.redirect('/')
                     }
                 })
             } else {
@@ -218,53 +220,97 @@ app.get('/callback', async (req, res) => {
             Standard page routes
 
 ===========================================*/
-app.get('/', (req, res) => 
-{
+
+
+app.get('/zoek', (req, res) => {
     if (req.session.loggedIn) {
-        res.render('index', { loggedIn: req.session.loggedIn })
+        const genres = [
+            { name: 'Pop', image: 'pop.jpg' },
+            { name: 'Edm', image: 'pop.jpg' },
+            { name: 'Rock', image: 'pop.jpg' },
+            { name: 'House', image: 'pop.jpg' },
+            { name: 'Indie', image: 'pop.jpg' },
+            { name: 'Rap', image: 'pop.jpg' },
+            { name: 'Jazz', image: 'pop.jpg' },
+            { name: 'Klassiek', image: 'pop.jpg'},
+            { name: 'Reggae', image: 'pop.jpg' },
+        ]
+        const artists = [
+            { name: '1', image: 'pop.jpg' },
+            { name: '2', image: 'pop.jpg' },
+            { name: '3', image: 'pop.jpg' },
+            { name: '4', image: 'pop.jpg' },
+            { name: '5', image: 'pop.jpg' },
+        ]
+        res.render('pages/zoek', { 
+            user: req.session.user, 
+            genres: genres, 
+            artists: artists 
+        })
     } else {
         res.render('pages/connect')
     }
 })
 
-app.get('/home', async (req, res) => {
-    try {
-        if (req.session.loggedIn) {
-            res.render('index', { loggedIn: req.session.loggedIn })
-        }
-        else {
-            res.redirect('/login')
-        }
+app.get('/genres', (req, res) => {
+    if (req.session.loggedIn) {
+        const genres = [
+            { name: 'Pop', image: 'pop.jpg' },
+            { name: 'Edm', image: 'pop.jpg' },
+            { name: 'Rock', image: 'pop.jpg' },
+            { name: 'House', image: 'pop.jpg' },
+            { name: 'Indie', image: 'pop.jpg' },
+            { name: 'Rap', image: 'pop.jpg' },
+            { name: 'Jazz', image: 'pop.jpg' },
+            { name: 'Klassiek', image: 'pop.jpg'},
+            { name: 'Reggae', image: 'pop.jpg' },
+        ]
+        res.render('pages/genres', { 
+            user: req.session.user, 
+            genres: genres 
+        })
     }
-    catch (error) {
-        console.error('Error rendering homepage:', error)
+    else {
+        res.render('pages/connect')
     }
 })
-    
 
+app.get('/profiel', async (req, res) => {
+    if (req.session.loggedIn) {
+        const genres = [
+            { name: 'Pop', image: 'pop.jpg' },
+            { name: 'Edm', image: 'pop.jpg' },
+            { name: 'Rock', image: 'pop.jpg' },
+            { name: 'House', image: 'pop.jpg' },
+            { name: 'Indie', image: 'pop.jpg' },
+            { name: 'Rap', image: 'pop.jpg' },
+            { name: 'Jazz', image: 'pop.jpg' },
+            { name: 'Klassiek', image: 'pop.jpg'},
+            { name: 'Reggae', image: 'pop.jpg' },
+        ]
 
+        // Get user from DB
+        const user = await usersCollection.findOne({ _id: req.session.user.id })
 
+        const totalSwipes = user.recommendations.length;
+        const likes = user.recommendations.filter(track => track.action === 'like').length;
+        const dislikes = user.recommendations.filter(track => track.action === 'dislike').length;
 
-/*==========================================\
-
-              Debugging routes
-
-===========================================*/
-app.get('/get-sess-user', (req, res) => {
-    console.log('User:', req.session.user)
-    res.redirect('/')
+        res.render('pages/profiel', { 
+            user: req.session.user, 
+            genres: genres,
+            DB_user: user,
+            stats: {
+                totalSwipes: totalSwipes,
+                likes: likes,
+                dislikes: dislikes
+            }
+        })
+    } else {
+        res.render('pages/connect')
+    }
 })
 
-app.get('/get-refresh-token', async (req, res) => {
-    console.log('Refresh token:', req.session.token.refresh_token)
-    res.redirect('/')
-})
-
-app.get('/session-test', (req, res) => 
-{
-    console.log("session token", req.session.token)
-    res.send(req.session.token)
-})
 
 
 
@@ -322,18 +368,6 @@ async function getUserProfile(req) {
     }
 }
 
-app.get('/profile', async (req, res) => {
-    try {
-        const profileData = await getUserProfile(req)
-        console.log('Profile:', profileData)
-        res.redirect('/')
-    }
-    catch (error) {
-        console.error('Error fetching profile:', error)
-    }
-})
-
-
 
 
 
@@ -351,27 +385,6 @@ async function getTopTracks(req)
     )).items
 }
 
-app.get('/top-tracks', async (req, res) => 
-{
-    try 
-    {
-        if (!req.session.loggedIn) 
-        {
-            return res.status(401).json({ error: 'User is not logged in' })
-        }
-        
-        const data = await getTopTracks(req)
-        // console.log('Top Tracks:', data)
-        res.render('topTracks', { tracks: data, recommendations: []})
-  } 
-  catch (error) 
-  {
-    console.error('Error fetching top tracks:', error)
-    res.status(500).json({ error: 'An error occurred while fetching top tracks.' })
-  }
-})
-
-
 
 
 
@@ -381,7 +394,6 @@ app.get('/top-tracks', async (req, res) =>
             Get recommendations
 
 ===========================================*/
-
 async function getRecommendations(req, seedTracks, limit) {
     try {
         let approvedRecommendations = [];
@@ -443,18 +455,27 @@ function hasPreviewUrl(track) {
     return track.preview_url !== null && track.preview_url !== '';
 }
 
-app.get('/recommendations', async (req, res) => {
-    try {
-        const topTracks = await getTopTracks(req);
-        const seedTracks = topTracks.map((track) => track.id);
-        const limit = 2;
-        const recommendedTracks = await getRecommendations(req, seedTracks, limit);
-        res.render('recommendations', { tracks: recommendedTracks });
-    } catch (error) {
-        console.error('Error fetching recommendations:', error);
-        res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
-    }
-});
+app.get('/', async (req, res) => 
+    {
+        if (req.session.loggedIn) {
+            try {
+                const topTracks = await getTopTracks(req);
+                const seedTracks = topTracks.map((track) => track.id);
+                const limit = 2;
+                const recommendedTracks = await getRecommendations(req, seedTracks, limit);
+                res.render('pages/verkennen', { 
+                    user: req.session.user,
+                    tracks: recommendedTracks
+                })
+            } catch (error) {
+                console.error('Error fetching recommendations:', error);
+                res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
+            }
+            
+        } else {
+            res.render('pages/connect')
+        }
+    })
 
 app.get('/new-recommendation', async (req, res) => {
     try {
@@ -697,29 +718,6 @@ async function registerSongCollection(req) {
 
 
 
-
-/*==========================================\
-
-              Show user activity
-
-===========================================*/
-app.get('/my-activity', async (req, res) => {
-    try {
-        const userId = req.session.user.id
-        const user = await usersCollection.findOne({ _id: userId })
-
-        res.render('activity', { activity: user.recommendations })
-    }
-    catch (error) {
-        console.error('Error fetching activity:', error)
-    }
-})
-
-
-
-
-
-
 /*==========================================\
 
                   Search bar
@@ -747,29 +745,14 @@ app.get('/search', async (req, res) => {
 });
 
 
-app.get('/zoek', (req, res) => {
-    res.render('pages/zoek')
-})
-
-app.get('/genres', (req, res) => {
-    res.render('pages/genres')
-}) 
-
-app.get('/profiel', (req, res) => {
-    res.render('pages/profiel')
-}) 
-
-
-app.get('/verkennen', (req, res) => {
-    res.render('pages/verkennen')
-}) 
-
-app.get('/connect', (req, res) => {
-    res.render('pages/connect')
-}) 
 
 
 
+/*==========================================\
+
+              Start the server
+
+===========================================*/
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`)
   })

@@ -10,16 +10,18 @@
 
 <body>
     <header>
-        <%- include('../partials/nav') %>
+        <%- include('../partials/nav', { user: user }) %>
         <h1>Profiel</h1>
     </header>
 
     <main>
         <section id="user">
             <img src="images/pop.jpg">
+            <!-- Juke logo als pfp gebruiken? -->
+
             <div>
-                <h3>Username</h3>
-                <p>bio</p>
+                <h3><%= user.display_name %></h3>
+                <p>Bio? gaan we dit houden?</p>
             </div>
             <button>settings</button>
         </section>
@@ -33,65 +35,42 @@
             <h2>Statistieken</h2>
             <div id="statsLijst">
                 <div>
-                    <h4>145</h4>
+                    <h4><%= stats.totalSwipes %></h4>
                     <p>swipes</p>
                 </div>
                 <div>
-                    <h4>70</h4>
+                    <h4><%= stats.likes %></h4>
                     <p>geliket</p>
                 </div>
                 <div>
-                    <h4>75</h4>
+                    <h4><%= stats.dislikes %></h4>
                     <p>gedisliket</p>
                 </div>
             </div>
             <h3>Jouw top genres</h3>
             <div id="statsGenre">
-                <p>Pop</p>
-                <p>Punk</p>
-                <p>Rock</p>
-                <p>R&B</p>
-                <p>Indie</p>
-                <p>Hip-Hop</p>
+                <% genres.forEach(genre => { %>
+                    <p><%= genre.name %></p>
+                <% }) %>
             </div>
         </section>
 
         <section id="activiteit">
             <h2>Activiteit</h2>
             <div>
-                <div class="cardProfiel">
-                    <img src="images/pop.jpg">
-                    <div>
-                        <h4>Europapa</h4>
-                        <p>Joost Klein</p>
+                <% DB_user.recommendations.forEach(track => { %>
+                    <div class="cardProfiel">
+                        <img src="<%= track.images[0].url %>">
+                        <div>
+                            <h4><%= track.name %></h4>
+                            <p><%= track.artists.join(", ") %></p>
+                            <p><%= track.action %></p>
+                        </div>
                     </div>
-                </div>
-                <div class="cardProfiel">
-                    <img src="images/pop.jpg">
-                    <div>
-                        <h4>Dani California blasdlkasldkalskdla</h4>
-                        <p>Red Hot Chili Peppers</p>
-                    </div>
-                </div>
-                <div class="cardProfiel">
-                    <img src="images/pop.jpg">
-                    <div>
-                        <h4>Lost</h4>
-                        <p>Frank Ocean</p>
-                    </div>
-                </div>
-                <div class="cardProfiel">
-                    <img src="images/pop.jpg">
-                    <div>
-                        <h4>Dani California</h4>
-                        <p>Red Hot Chili Peppers</p>
-                    </div>
-                </div>
+                <% }) %>
             </div>
         </section>
     </main>
-
-    <script defer src="/app.js"></script>
 </body>
 
 </html>

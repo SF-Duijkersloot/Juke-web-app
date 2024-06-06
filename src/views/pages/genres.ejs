@@ -10,7 +10,7 @@
 
 <body>
     <header id="genreHeader">
-        <%- include('../partials/nav') %>
+        <%- include('../partials/nav', { user: user }) %>
         <a href="/zoek" class="backArrow"><img src="/images/arrowBlack.svg"></a>
         <h1>Genres</h1>
         <input type="text" class="zoeken" placeholder="Zoeken...">
@@ -19,46 +19,21 @@
     <main>
         <section class="searchList">
             <ul>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
+                <% genres.forEach(genre => { %>
+                    <li>
+                        <div>
+                            <img src="/images/<%= genre.image %>" alt="<%= genre.name %>">
+                            <p><%= genre.name %></p>
+                        </div>
+                        <form>
+                            <input type="hidden" name="genre" value="<%= genre.name %>">
+                            <input type="submit" value="Swipe" class="swipeButton">
+                        </form>
+                    </li>
+                <% }) %>
             </ul>
         </section>
     </main>
-
-    <script defer src="/scripts/app.js"></script>
 </body>
 
 </html>

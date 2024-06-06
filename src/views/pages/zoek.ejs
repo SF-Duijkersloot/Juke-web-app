@@ -10,9 +10,15 @@
 
 <body>
     <header id="searchHeader">
-        <%- include('../partials/nav') %>
+        <%- include('../partials/nav', { user: user }) %>
         <h1>Zoek</h1>
         <input type="text" class="zoeken" placeholder="Zoeken...">
+
+        <!-- Zoekformulier -->
+        <!-- <form action="/search" method="get">
+            <input type="text" name="q" placeholder="Search for music...">
+            <button type="submit">Search</button>
+        </form> -->
     </header>
 
     <main>
@@ -20,68 +26,43 @@
             <h2>Top genres</h2>
             <p>Swipe en ontdek op basis van een specifieke genre</p>
             <ul>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
+                <% genres.slice(0, 5).forEach(genre => { %>
+                    <li>
+                        <div>
+                            <img src="images/<%= genre.image %>" alt="<%= genre.name %>">
+                            <p><%= genre.name %></p>
+                        </div>
+                        <form>
+                            <input type="hidden" name="genre" value="<%= genre.name %>">
+                            <input type="submit" value="Swipe" class="swipeButton">
+                        </form>
+                    </li>
+                <% }) %>
+            </ul>
             </ul>
             <a href="/genres" class="moreLink">Meer weergeven</a>
         </section>
         <section class="searchList">
             <h2>Jouw topartiesten</h2>
             <p>Swipe en ontdek op basis van een specifieke artiest</p>
-            <ul >
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
-                <li>
-                    <img src="images/pop.jpg" alt="pop">
-                    <p>Pop</p>
-                    <a href="/verkennen">Swipe</a>
-                </li>
+            <ul>
+                <% artists.forEach(artist => { %>
+                    <li>
+                        <div>
+                            <img src="images/<%= artist.image %>" alt="<%= artist.name %>">
+                            <p><%= artist.name %></p>
+                        </div>
+                        <form>
+                            <input type="hidden" name="artist" value="<%= artist.name %>">
+                            <input type="submit" value="Swipe" class="swipeButton">
+                        </form>
+                    </li>
+                <% }) %>
             </ul>
         </section>
     </main>
 
-    <script defer src="/app.js"></script>
+    <script defer src="scripts/app.js"></script>
 </body>
 
 </html>
