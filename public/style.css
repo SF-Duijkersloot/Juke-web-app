@@ -152,6 +152,10 @@ button {
     position: relative;
 }
 
+#genreHeaderDiv h1{
+    text-align: start;
+}
+
 .backArrow {
     position: absolute;
     left: 0;
@@ -547,7 +551,7 @@ button {
 
 .card article > header {
     width: 100%;
-    height: 75%;
+    height: 65%;
     background-size: cover;
     background-position: center;
 }
@@ -572,14 +576,6 @@ button {
     margin-top: -.3em;
     margin-bottom: 0;
     text-overflow: ellipsis;
-}
-.card section > aside{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.card section > aside > p {
-    margin: 0;
 }
 
 .buttons {
@@ -656,19 +652,88 @@ button {
     background-color: var(--primary-color)
 } */
 
+/* ------------------likedpagina----------------- */
+/* #liked {
+    padding: 1em;
+} */
+
+#liked h2 {
+    text-align: start;
+    margin: 0 0 1em .4em;
+
+}
+
+#likedClass {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6em;
+   justify-content: center;
+}
+
+
+.likedList {
+    width: 10.5em; 
+    height: 16em;
+    text-align: start;
+    border-radius: .5em;
+    box-sizing: border-box; 
+    box-shadow: .1em .1em .5em var(--grey);
+
+}
+
+.likedList img {
+    width: 100%;
+    object-fit: cover;
+    vertical-align: top;
+    border-radius: 0.5em 0.5em 0 0;
+}
+
+.likedList h4, .likedList p  {
+   padding: 0 .5em;
+}
+
+.likedList h4{
+    margin-top: .3em;
+}
+
+
+
+
 /* -----------------media query-------------- */
 
 @media (min-width: 992px) {
     .icon {
         filter: invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(250%) contrast(103%);
     }
-/* -------------------nav----------------- */
-body{
-    height:100vh;
+
+    #body{
+        width: 100%;
+    }
+
+    Body{
+        width: 70%;
+        float: right;
+        height: 100vh;
+       }
+
+/* ---------header-------------- */    
+#genreHeaderDiv {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    position: relative;
+
 }
+
+#genreHeaderDiv h1{
+    text-align: start;
+    margin-left: 1em;
+}
+
+/* -------------------nav----------------- */
 .dropdown h2{
     display: contents;
-    color: var(--light);
+    color: var(--primary);
 }
 
 .dropdown {
@@ -735,6 +800,7 @@ body{
     display: contents;
     color: var(--light);
  }
+
 
     /* -------------------aanmeldpagina--------------- */
     .aanmelden{
@@ -803,12 +869,9 @@ body{
         height: 95vh;
         }
 /* ---------------------verkennen------------------- */
-       #main{
-        width: 80%;
-        float: right;
-       }
+
     .verkennen{
-            width: 80%;
+            width: 100%;
             margin-top: 0;
         }
         .verkennen p{
@@ -816,41 +879,31 @@ body{
             color: var(--primary);
         }
         .card{
-            display: flex;
-            align-items: center;
-            margin-top: 0;
-            width: 100%;
-            height: 70vh;
+            width: 25em;
+            height: 25em;
         }
         .card article {
-            box-shadow: none;
-            border-radius: .4em;
-            float: right;
-            width: 50%;
+            border-radius: .5em;
+            box-shadow: 0 .01em .3em var(--grey);
         }
-        .card article > header {
-            height: 80%;
-            opacity: .5;
-            z-index: -1;
-            background-position: top;
-
-        }
-        .card section > div  {
-            margin: 0;
-            margin-top: 0;
-            z-index: 2;
-        }
-        .card section > aside > p {
-            margin: 0;
-            margin-top: 0;
-        }
-        
-        .buttons {
+    
+        .track-buttons {
             position: absolute;
-            bottom: 2em;
+            bottom: -7em;
             display: flex;
             justify-content: center;
             align-items: center;  
         }
+
+        /* --------likedpagina------- */
+
+        #liked{
+            width: 100%;
+            float: right;
+        }
+        #likedClass {
+           justify-content: start;
+        }
+
     }
 
