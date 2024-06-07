@@ -519,7 +519,7 @@ body{
 .navigatieContent {
     align-items: center;
     justify-content: start;
-    top: 7em;
+    top: 10em;
     left: 0;
     background-color: transparent;
     z-index: 0;
