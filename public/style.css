@@ -640,6 +640,17 @@ button {
     width: 2.5em;
     height: 2.5em;
 }
+
+.dislike-btn, .like-btn {
+    width: 5em;
+    height: 5em;
+}
+
+.play-btn {
+    width: 6em;
+    height: 6em;
+}
+
 /* 
 .track-buttons .preview-button {
     background-color: var(--primary-color)
@@ -661,6 +672,7 @@ body{
 }
 
 .dropdown {
+    position: fixed;
     top:1em; 
     left: 1em;
     bottom: 1em;
@@ -668,7 +680,7 @@ body{
     width:20%;
     padding: 1em 2em;
     background-color: var(--dark);
-    border-radius: 1em;
+    border-radius: 0;
     z-index: 200;
 }
 
@@ -688,7 +700,7 @@ body{
 .navigatieContent {
     align-items: center;
     justify-content: start;
-    top: 7em;
+    top: 10em;
     left: 0;
     background-color: transparent;
     z-index: 0;
@@ -701,7 +713,7 @@ body{
     align-items: center;
     justify-content: start;
     border-radius: .4em;
-    background-color: var(--primary);
+    background-color: transparent;
     padding: .5em;
     opacity: 1;
     transition: none;
@@ -792,11 +804,11 @@ body{
         }
 /* ---------------------verkennen------------------- */
        #main{
-        width: 90%;
+        width: 80%;
         float: right;
        }
     .verkennen{
-            width: 60%;
+            width: 80%;
             margin-top: 0;
         }
         .verkennen p{
@@ -804,23 +816,41 @@ body{
             color: var(--primary);
         }
         .card{
+            display: flex;
+            align-items: center;
             margin-top: 0;
+            width: 100%;
+            height: 70vh;
+        }
+        .card article {
+            box-shadow: none;
+            border-radius: .4em;
+            float: right;
+            width: 50%;
         }
         .card article > header {
-            height: 70%;
+            height: 80%;
+            opacity: .5;
+            z-index: -1;
+            background-position: top;
+
         }
-        
-        .card section > div > h2 {
+        .card section > div  {
             margin: 0;
+            margin-top: 0;
+            z-index: 2;
+        }
+        .card section > aside > p {
+            margin: 0;
+            margin-top: 0;
         }
         
         .buttons {
             position: absolute;
-            bottom: 4em;
+            bottom: 2em;
             display: flex;
             justify-content: center;
-            align-items: center;
-           
+            align-items: center;  
         }
     }
 

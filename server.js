@@ -394,7 +394,8 @@ async function getTopTracks(req)
             Get recommendations
 
 ===========================================*/
-async function getRecommendations(req, seedTracks, limit) {
+
+async function getRecommendations(req, seedTracks, limit, track_id, type) {
     try {
         let approvedRecommendations = [];
         let remainingLimit = limit;
@@ -455,6 +456,52 @@ function hasPreviewUrl(track) {
     return track.preview_url !== null && track.preview_url !== '';
 }
 
+app.get('/recommendations', async (req, res) => {
+    try {
+        const topTracks = await getTopTracks(req);
+        const seedUri = topTracks.map((track) => track.id);
+        const limit = 2;
+        const seed_type = 'seed_tracks'
+        const recommendedTracks = await getRecommendations(req, seedUri, limit, seed_type);
+        res.render('recommendations', { tracks: recommendedTracks });
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
+    }
+});
+
+app.get('/search-recommendations', async (req, res) => {
+    try {
+        const { seedUri, seed_type } = req.query;
+        if (!seedUri || !seed_type) {
+            return res.status(400).json({ error: 'No query provided' });
+        }
+        const limit = 2;
+        const recommendedTracks = await getRecommendations(req, [seedUri], limit, seed_type);
+        res.render('recommendations', { tracks: recommendedTracks });
+    } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
+    }
+});
+
+
+app.get('/new-recommendation', async (req, res) => {
+    try {
+        const topTracks = await getTopTracks(req);
+        const seedTracks = topTracks.map((track) => track.id);
+        const limit = 1;
+        const recommendedTracks = await getRecommendations(req, seedTracks, limit);
+        res.json({ recommendation: recommendedTracks[0] });
+    } catch (error) {
+        console.error('Error fetching new recommendation:', error);
+        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' });
+    }
+});
+
+
+// --------------------------------------
+
 app.get('/', async (req, res) => 
     {
         if (req.session.loggedIn) {
@@ -476,25 +523,6 @@ app.get('/', async (req, res) =>
             res.render('pages/connect')
         }
     })
-
-app.get('/new-recommendation', async (req, res) => {
-    try {
-        const topTracks = await getTopTracks(req);
-        const seedTracks = topTracks.map((track) => track.id);
-        const limit = 1;
-        const recommendedTracks = await getRecommendations(req, seedTracks, limit);
-        res.json({ recommendation: recommendedTracks[0] });
-    } catch (error) {
-        console.error('Error fetching new recommendation:', error);
-        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' });
-    }
-});
-
-
-
-
-
-
 
 /*==========================================\
 
