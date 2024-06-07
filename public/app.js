@@ -123,3 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => handlePreviewButtonClick(button));
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.preview-button').forEach(button => {
+        button.addEventListener('click', () => handlePreviewButtonClick(button));
+    });
+});
