@@ -786,4 +786,12 @@ app.listen(port, () => {
   })
 
 
-  
+
+
+
+
+
+
+app.get('/disliked-recommendations', (req, res) => {
+    res.render('pages/disliked', { user: req.session.user})
+})
