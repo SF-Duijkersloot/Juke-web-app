@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function createCardElement(track) {
         const card = document.createElement('div');
         card.classList.add('card');
-        card.style.zIndex = 0;
+        // card.style.zIndex = 0;
     
         const imageUrl = track.album.images[0].url;
         const trackName = track.name;
