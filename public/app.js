@@ -143,3 +143,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+// document.addEventListener('DOMContentLoaded', function() {
+//     let playBtn = document.querySelector('.play-btn');
+
+//     playBtn.addEventListener('click', function() {
+//         playBtn.classList.add('animate');
+
+//         // Remove the class after the animation duration to reset the state
+//         setTimeout(function() {
+//             playBtn.classList.remove('animate');
+//         }, 15000); // 15 seconds
+//         console.log("het werkt wel!")
+//     });
+// });
