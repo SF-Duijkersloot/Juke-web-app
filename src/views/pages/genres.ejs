@@ -9,27 +9,29 @@
 </head>
 
 <body>
-    <header id="genreHeader">
+    <header>
         <%- include('../partials/nav', { user: user }) %>
-        <a href="/zoek" class="backArrow"><img src="/images/arrowBlack.svg"></a>
-        <h1>Genres</h1>
-        <input type="text" class="zoeken" placeholder="Zoeken...">
+        <div id="genreHeaderDiv">
+            <a href="/zoek" class="backArrow"><img src="/images/arrowBlack.svg"></a>
+            <h1>Genres</h1>
+        </div>
+        <input type="text" class="searchBar" placeholder="Zoeken...">
     </header>
 
     <main>
         <section class="searchList">
             <ul>
                 <% genres.forEach(genre => { %>
-                    <li>
-                        <div>
-                            <img src="/images/<%= genre.image %>" alt="<%= genre.name %>">
-                            <p><%= genre.name %></p>
-                        </div>
-                        <form>
-                            <input type="hidden" name="genre" value="<%= genre.name %>">
-                            <input type="submit" value="Swipe" class="swipeButton">
-                        </form>
-                    </li>
+                <li>
+                    <div>
+                        <img src="/images/<%= genre.image %>" alt="<%= genre.name %>">
+                        <p><%= genre.name %></p>
+                    </div>
+                    <form>
+                        <input type="hidden" name="genre" value="<%= genre.name %>">
+                        <input type="submit" value="Swipe" class="swipeButton">
+                    </form>
+                </li>
                 <% }) %>
             </ul>
         </section>
