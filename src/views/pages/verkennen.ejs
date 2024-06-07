@@ -1,59 +1,70 @@
 <!DOCTYPE html>
 <html lang="nl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="Juke.png">
+    <link rel="icon" type="image/x-icon" href="images/Juke.png">
     <link rel="stylesheet" href="style.css">
     <title>Juke.</title>
 </head>
+
 <body>
     <header>
         <%- include('../partials/nav', { user: user }) %>
     </header>
-    
+
     <main id="main">
         <section class="verkennen">
             <h1>Verkennen</h1>
             <p>Juke. algoritme</p>
         </section>
-            <div class="cards-container">
-                <% tracks.forEach(track => { %>
-                    <div class="card">
-                        <article class="article">
-                            <header style="background-image: url(<%= track.album.images[0].url %>)"></header>
-                            <section>
-                                <div>
-                                    <h3><%= track.name %></h3>
-                                    <p><%= track.artists.map(artist => artist.name).join(', ') %></p>
-                                </div>
-                                <aside>
-                                    <p><%= track.genres %></p>
-                                </aside>
-                            </section>
-                        </article>
-                        <div class="track-buttons">
-                            <form>
-                                <input type="hidden" name="track_id" value="<%= track.id %>" class="input" />
-                                <input type="hidden" name="track_name" value="<%= track.name %>" class="input" />
-                                <input type="hidden" name="track_artists" value="<%= JSON.stringify(track.artists.map(artist => artist.name)) %>" class="input" />
-                                <input type="hidden" name="track_images" value="<%= JSON.stringify(track.album.images) %>" class="input" />
-                                <button type="submit" name="action" value="dislike" class="dislike-button">
-                                    <img src="images/dislike.svg" alt="dislike icon">
-                                </button>
-                                <button class="preview-button" data-preview-url="<%= track.preview_url %>">
-                                    <img src="images/play.svg" alt="play icon">
-                                </button>
-                                <button type="submit" name="action" value="like" class="like-button">
-                                    <img src="images/Like.svg" alt="like icon">
-                                </button>
-                            </form>
-                        </div>
+        <div class="cards-container">
+            <% tracks.forEach(track=> { %>
+                <div class="card">
+                    <article class="article">
+                        <header style="background-image: url(<%= track.album.images[0].url %>)"></header>
+                        <section>
+                            <div>
+                                <h3>
+                                    <%= track.name %>
+                                </h3>
+                                <p>
+                                    <%= track.artists.map(artist=> artist.name).join(', ') %>
+                                </p>
+                            </div>
+                            <aside>
+                                <p>
+                                    <%= track.genres %>
+                                </p>
+                            </aside>
+                        </section>
+                    </article>
+                    <div class="track-buttons">
+                        <form>
+                            <input type="hidden" name="track_id" value="<%= track.id %>" class="input" />
+                            <input type="hidden" name="track_name" value="<%= track.name %>" class="input" />
+                            <input type="hidden" name="track_artists"
+                                value="<%= JSON.stringify(track.artists.map(artist => artist.name)) %>" class="input" />
+                            <input type="hidden" name="track_images" value="<%= JSON.stringify(track.album.images) %>"
+                                class="input" />
+                            <button type="submit" name="action" value="dislike" class="dislike-button">
+                                <img src="images/dislike.svg" alt="dislike icon">
+                            </button>
+                            <button class="preview-button" data-preview-url="<%= track.preview_url %>">
+                                <img src="images/play.svg" alt="play icon">
+                            </button>
+                            <button type="submit" name="action" value="like" class="like-button">
+                                <img src="images/Like.svg" alt="like icon">
+                            </button>
+                        </form>
                     </div>
+                </div>
                 <% }) %>
-            </div>
+        </div>
 
     </main>
     <script defer src="scripts/handleSwiping.js"></script>
 </body>
+
 </html>

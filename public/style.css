@@ -177,7 +177,7 @@ button {
 #user {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 1.5em;
+    margin-bottom: 1em;
 }
 
 #user img {
@@ -201,9 +201,71 @@ button {
     margin-left: auto; 
 }
 
-#user button:hover {
+/* #user button:hover {
     scale: 1.1;
     filter: drop-shadow(var(--primary) 0.1em 0.1em 0.9em);
+} */
+
+#playlists{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+#playlists a{
+   display: flex;
+   justify-content:space-between;
+   
+   width: 95%;
+   height:3em;
+   padding: .5em 1em;
+   margin-bottom: .7em;
+   border-radius: .5em;
+   text-decoration: none;
+
+   color: var(--dark);
+   border: solid .1em var(--primary);
+   /* box-shadow: .05em .05em .4em var(--primary); */
+}
+
+#playlists a:visited{
+    color: var(--dark);
+}
+
+#playlists div{
+    margin-right: auto;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+#playlists div p{
+    margin-top: -.3em;
+    font-size: .95em;
+}
+
+.likedLink img:nth-of-type(1), .dislikedLink img:nth-of-type(1) {
+    width: 2.5em;
+    margin-right: 1em;
+}
+
+
+
+.likedLink img:nth-of-type(2){
+    margin-left: auto;
+}
+
+.dislikedLink img:nth-of-type(2){
+    margin-left: auto;
+}
+
+
+
+#playlists a:visited{
+    text-decoration: none;
+    color: var(--dark);
 }
 
 #stats {
