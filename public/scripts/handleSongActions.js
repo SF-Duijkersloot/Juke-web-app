@@ -1,3 +1,9 @@
+/*==========================================\
+
+Ongebruikte code, maar voor backup laten staan
+
+===========================================*/
+
 const likeButtons = document.querySelectorAll('.like-button')
 const dislikeButtons = document.querySelectorAll('.dislike-button')
 
