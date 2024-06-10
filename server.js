@@ -45,7 +45,6 @@ app
 ===========================================*/
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const { create } = require('domain')
-const e = require('express')
 // Construct URL used to connect to database from info in the .env file
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`
 // Create a MongoClient
@@ -784,3 +783,11 @@ app.get('/search', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`)
   })
+
+
+
+
+
+app.get('/liked-recommendations', (req, res) => {
+    res.render('pages/liked', { user: req.session.user})
+})
