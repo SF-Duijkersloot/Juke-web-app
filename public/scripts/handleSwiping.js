@@ -1,225 +1,382 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const swipeThreshold = 200;
-    const cards = document.querySelectorAll('.card > .article');
+/*==========================================\
 
-    function handleSwipe(card, liked) {
-        if (liked) {
-            console.log('Liked', card);
-            handleButtonClick(card.closest('.card'), 'like');
-        } else {
-            console.log('Disliked', card);
-            handleButtonClick(card.closest('.card'), 'dislike');
-        }
+        Initialisatie van variabelen
 
-        // Reset card position
-        card.style.transform = 'translateX(0) rotate(0)';
+===========================================*/
 
-        // Reset button styles
-        resetButtonStyles(card.closest('.card'));
-    }
+const swipeThreshold = 125
+const cards = document.querySelectorAll('.card > .article')
+const cardsContainer = document.querySelector('.cards-container')
 
-    function onMove(clientX, startX, card) {
-        const offsetX = clientX - startX;
-        const rotation = offsetX / 20;
-        card.style.transform = `translateX(${offsetX}px) rotate(${rotation}deg)`;
+let currentAudio = new Audio()
+let animationFrameId
 
-        const songCard = card.closest('.card');
-        const dislikeBtn = songCard.querySelector('.dislike-button');
-        const likeBtn = songCard.querySelector('.like-button');
 
-        if (offsetX > 0) {
-            likeBtn.style.backgroundColor = '#a2daa7';
-            likeBtn.style.border = '.1em #1cc02a solid';
-            dislikeBtn.style.backgroundColor = '';
-            dislikeBtn.style.border = '';
-        } else {
-            dislikeBtn.style.backgroundColor = '#f19f99';
-            dislikeBtn.style.border = '.1em #c0271c solid';
-            likeBtn.style.backgroundColor = '';
-            likeBtn.style.border = '';
-        }
-    }
 
-    function attachEventListeners(card) {
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
+/*==========================================\
 
-        card.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            currentX = startX;
-        });
+         Event listeners en functies
 
-        card.addEventListener('touchmove', (e) => {
-            currentX = e.touches[0].clientX;
-            onMove(currentX, startX, card);
-        });
+===========================================*/
 
-        card.addEventListener('touchend', () => {
-            const offsetX = currentX - startX;
-            if (Math.abs(offsetX) > swipeThreshold) {
-                handleSwipe(card, offsetX > swipeThreshold);
-            } else {
-                // Snap back if the threshold isn't met
-                card.style.transform = 'translateX(0) rotate(0)';
-                resetButtonStyles(card.closest('.card'));
-            }
-        });
-
-        card.addEventListener('mousedown', (e) => {
-            startX = e.clientX;
-            currentX = startX;
-            isDragging = true;
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            currentX = e.clientX;
-            onMove(currentX, startX, card);
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (!isDragging) return;
-            isDragging = false;
-            const offsetX = currentX - startX;
-            if (Math.abs(offsetX) > swipeThreshold) {
-                handleSwipe(card, offsetX > swipeThreshold);
-            } else {
-                // Snap back if the threshold isn't met
-                card.style.transform = 'translateX(0) rotate(0)';
-                resetButtonStyles(card.closest('.card'));
-            }
-        });
-    }
-
-    cards.forEach((card) => {
-        attachEventListeners(card);
-    });
-
-    function resetButtonStyles(songCard) {
-        const dislikeBtn = songCard.querySelector('.dislike-button');
-        const likeBtn = songCard.querySelector('.like-button');
-
-        if (dislikeBtn) {
-            dislikeBtn.style.backgroundColor = '';
-            dislikeBtn.style.border = '';
-        }
-        if (likeBtn) {
-            likeBtn.style.backgroundColor = '';
-            likeBtn.style.border = '';
-        }
-    }
-
-    const handleButtonClick = async (songCard, action, e) => {
-        // e.preventDefault();
-        const form = songCard.querySelector('form');
-        const trackId = form.querySelector('input[name="track_id"]').value;
-        const trackName = form.querySelector('input[name="track_name"]').value;
-        const trackArtists = JSON.parse(form.querySelector('input[name="track_artists"]').value);
-        const trackImages = JSON.parse(form.querySelector('input[name="track_images"]').value);
-
-        const res = await fetch(`/${action}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                track_id: trackId,
-                track_name: trackName,
-                track_artists: trackArtists,
-                track_images: trackImages,
-                action: action
-            })
-        });
-
-        if (res.ok) {
-            // Remove the liked/disliked recommendation from the page
-            songCard.remove();
-
-            // Fetch a new recommendation
-            const newRecommendation = await fetchNewRecommendation();
-            if (newRecommendation) {
-                // Append the new recommendation to the page
-                const cardsContainer = document.querySelector('.cards-container');
-                const newCard = createCardElement(newRecommendation);
-                cardsContainer.appendChild(newCard);
-            }
-        }
-    };
-
-    async function fetchNewRecommendation() {
-        const res = await fetch('/new-recommendation');
-
-        if (res.ok) {
-            const data = await res.json();
-            return data.recommendation;
-        }
-
-        return null;
-    }
-    
-    function createCardElement(track) {
-        const card = document.createElement('div');
-        card.classList.add('card');
-        // card.style.zIndex = 0;
-    
-        const imageUrl = track.album.images[0].url;
-        const trackName = track.name;
-        const trackId = track.id;
-        const artistNames = track.artists.map(artist => artist.name);
-    
-        card.innerHTML = `
-            <div class="card">
-                <article class="article">
-                    <header style="background-image: url(${imageUrl})"></header>
-                    <section>
-                        <div>
-                            <h3>${trackName}</h3>
-                            <p>${artistNames.join(', ')}</p>
-                        </div>
-                        <aside>
-                            <p>${artistNames.join(', ')}</p>
-                        </aside>
-                    </section>
-                </article>
-                <div class="track-buttons">
-                    <form>
-                        <input type="hidden" name="track_id" value="${trackId}" class="input" />
-                        <input type="hidden" name="track_name" value="${trackName}" class="input" />
-                        <input type="hidden" name="track_artists" value='${JSON.stringify(artistNames)}' class="input" />
-                        <input type="hidden" name="track_images" value='${JSON.stringify(track.album.images)}' class="input" />
-                        <button type="submit" name="action" value="dislike" class="dislike-button">
-                            <img src="images/dislike.svg" alt="dislike icon">
-                        </button>
-                        <button class="preview-button" data-preview-url="${track.preview_url}">
-                            <img src="images/play.svg" alt="play icon">
-                        </button>
-                        <button type="submit" name="action" value="like" class="like-button">
-                            <img src="images/Like.svg" alt="like icon">
-                        </button>
-                    </form>
-                </div>
-            </div>
-        `;
-    
-        // Add event listeners to the new card
-        const likeButton = card.querySelector('.like-button');
-        const dislikeButton = card.querySelector('.dislike-button');
-    
-        likeButton.addEventListener('click', (e) => handleButtonClick(card, 'like', e));
-        dislikeButton.addEventListener('click', (e) => handleButtonClick(card, 'dislike', e));
-    
-        const previewButton = card.querySelector('.preview-button');
-        previewButton.addEventListener('click', (e) => handlePreviewButtonClick(previewButton, e));
-    
-        attachEventListeners(card);
-    
-        return card;
-    }
-    
-
+// Voegt de event listeners toe aan alle cards
+cards.forEach((card) => {
+    attachEventListeners(card)
 })
 
+// Functie voor het swipen van de card
+function handleSwipe(card, liked) {
+    const currentCard = card.closest('.card')
+
+    if (liked) {
+        handleCardEvent(currentCard, 'like')
+    } else {
+        handleCardEvent(currentCard, 'dislike')
+    }
+
+    card.style.transition = 'transform 0.3s ease-out'
+
+    const direction = liked ? 1 : -1
+    card.style.transform = `translateX(${direction * 1000}px) rotate(${direction * 45}deg)`
+
+    setTimeout(() => {
+        currentCard.remove()
+    }, 300)
+}
+
+// Houdt huidige positie bij
+function onMove(clientX, startX, card) {
+    const offsetX = clientX - startX
+    console.log(offsetX)
+    const rotation = offsetX / 20
+    card.style.transform = `translateX(${offsetX}px) rotate(${rotation}deg)`
+    
+    const cardElement = card.closest('.card')
+
+    if (offsetX > 0) {
+        colorizeButton(cardElement, 'like')
+    } else {
+        colorizeButton(cardElement, 'dislike')
+    }
+}
+
+// Voegt alle event listeners toe aan de card in 1 functie
+function attachEventListeners(card) {
+    let startX = 0
+    let currentX = 0
+    let isDragging = false
+
+    card.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX
+        currentX = startX
+        card.style.transition = '' 
+    })
+
+    card.addEventListener('touchmove', (e) => {
+        currentX = e.touches[0].clientX
+        onMove(currentX, startX, card)
+    })
+
+    card.addEventListener('touchend', () => {
+        const offsetX = currentX - startX
+        if (Math.abs(offsetX) > swipeThreshold) {
+            handleSwipe(card, offsetX > swipeThreshold)
+        } else {
+            card.style.transform = 'translateX(0) rotate(0)'
+            resetButtonColor(card)
+        }
+    })
+
+    card.addEventListener('mousedown', (e) => {
+        startX = e.clientX
+        currentX = startX
+        isDragging = true
+        card.style.transition = '' 
+    })
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return
+        currentX = e.clientX
+        onMove(currentX, startX, card)
+    })
+
+    document.addEventListener('mouseup', () => {
+        if (!isDragging) return
+        isDragging = false
+        const offsetX = currentX - startX
+
+        if (Math.abs(offsetX) > swipeThreshold) {
+            handleSwipe(card, offsetX > swipeThreshold)
+        } else {
+            card.style.transform = 'translateX(0) rotate(0)'
+            resetButtonColor(card)
+        }
+    })
+
+
+    // Buttons section
+    const cardElement = card.closest('.card')
+    const likeButton = cardElement.querySelector('.like-button')
+    const dislikeButton = cardElement.querySelector('.dislike-button')
+    const previewButton = cardElement.querySelector('.preview-button')
+
+    likeButton.addEventListener('click', (e) => {
+        handleCardEvent(cardElement, 'like', e)
+        colorizeButton(cardElement, 'like')
+    })
+
+    dislikeButton.addEventListener('click', (e) => {
+        handleCardEvent(cardElement, 'dislike', e)
+        colorizeButton(cardElement, 'dislike')
+    })
+
+    previewButton.addEventListener('click', (e) => {
+        e.preventDefault() // Voorkom pagina refresh
+        handlePreviewButtonClick(previewButton)
+    })
+}
+
+
+
+/*==========================================\
+
+       Buttons kleuren functionaliteit
+
+===========================================*/
+function colorizeButton(cardElement, action) {
+    const dislikeBtn = cardElement.querySelector('.dislike-button')
+    const likeBtn = cardElement.querySelector('.like-button')
+
+    if (action === 'like') {
+        likeBtn.style.backgroundColor = '#a2daa7'
+        likeBtn.style.border = '.1em #1cc02a solid'
+        dislikeBtn.style.backgroundColor = ''
+        dislikeBtn.style.border = ''
+    } else {
+        dislikeBtn.style.backgroundColor = '#f19f99'
+        dislikeBtn.style.border = '.1em #c0271c solid'
+        likeBtn.style.backgroundColor = ''
+        likeBtn.style.border = ''
+    }
+}
+
+function resetButtonColor(cardElement) {
+    const card = cardElement.closest('.card')
+    const dislikeBtn = card.querySelector('.dislike-button')
+    const likeBtn = card.querySelector('.like-button')
+
+    dislikeBtn.style.backgroundColor = ''
+    dislikeBtn.style.border = ''
+    likeBtn.style.backgroundColor = ''
+    likeBtn.style.border = ''
+}
+
+
+
+/*==========================================\
+
+        Preview knop functionaliteit
+
+===========================================*/
+let startTime = null
+let pauseTime = null
+
+function updateProgressRing(button, progress) {
+    const circle = button.querySelector('.progress-ring circle')
+    if (circle) {
+        const radius = circle.r.baseVal.value
+        const circumference = 2 * Math.PI * radius
+        const offset = circumference - (progress / 100) * circumference
+        circle.style.strokeDashoffset = - offset
+    }
+}
+
+function animateProgress(button, duration) {
+    function step(timestamp) {
+        if (!startTime) startTime = timestamp
+        const elapsed = timestamp - startTime
+        const progress = Math.min((elapsed / duration) * 100, 100)
+        updateProgressRing(button, progress)
+
+        if (progress < 100) {
+            animationFrameId = requestAnimationFrame(step)
+        } else {
+            cancelAnimationFrame(animationFrameId)
+        }
+    }
+    animationFrameId = requestAnimationFrame(step)
+}
+
+function handlePreviewButtonClick(button) {
+    const previewUrl = button.getAttribute('data-preview-url')
+    const previewIcon = button.querySelector('img')
+
+    if (currentAudio.src !== previewUrl) {
+        startAudioPreview(previewUrl, previewIcon, button)
+    } else {
+        if (currentAudio.paused) {
+            resumeAudioPreview(previewIcon, button)
+        } else {
+            pauseAudioPreview(previewIcon)
+        }
+    }
+    currentAudio.onended = () => {
+        stopAudioPreview(previewIcon, button)
+    }
+}
+
+function startAudioPreview(previewUrl, previewIcon, button) {
+    currentAudio.src = previewUrl
+    currentAudio.volume = 0.3
+    currentAudio.play()
+    previewIcon.src = "images/pause.svg"
+    startTime = performance.now()
+    animateProgress(button, 30000) // 30 seconds for het preview
+}
+
+function resumeAudioPreview(previewIcon, button) {
+    currentAudio.play()
+    previewIcon.src = "images/pause.svg"
+    startTime += performance.now() - pauseTime // Starttime baseren de pauze tijd
+    animateProgress(button, 30000 - (performance.now() - pauseTime)) // Hervatten op de juiste tijd
+}
+
+function pauseAudioPreview(previewIcon) {
+    currentAudio.pause()
+    previewIcon.src = "images/play.svg"
+    pauseTime = performance.now() // Store pause time
+    cancelAnimationFrame(animationFrameId)
+}
+
+function stopAudioPreview(previewIcon, button) {
+    previewIcon.src = "images/play.svg"
+    updateProgressRing(button, 0) // reset progress
+    cancelAnimationFrame(animationFrameId)
+}
+
+
+/*==========================================\
+
+        Swipe handling functionaliteit
+
+===========================================*/
+const handleCardEvent = async (cardElement, action, e) => {
+    // Timeout zodat de animatie kan afspelen/afronden
+    setTimeout(() => {
+        cardElement.remove()
+        
+        // Timeout voor soepelere overgang
+        setTimeout(() => {
+            // Speel preview van volgende nummer af
+            const nextCard = cardsContainer.querySelector('.card:nth-of-type(1)') // nth-of-type(1) is het volgende nummer
+            const previewButton = nextCard.querySelector('.preview-button')
+            handlePreviewButtonClick(previewButton)
+        }, 250)
+
+    }, 250)
+
+    // Als er een event is, voorkom standaard gedrag
+    if (e) e.preventDefault()
+
+    // Variabelen ophalen uit de form
+    const form = cardElement.querySelector('form')
+    const trackId = form.querySelector('input[name="track_id"]').value
+    const trackName = form.querySelector('input[name="track_name"]').value
+    const trackArtists = JSON.parse(form.querySelector('input[name="track_artists"]').value)
+    const trackImages = JSON.parse(form.querySelector('input[name="track_images"]').value)
+    const card = cardElement.querySelector('.article')
+
+    // Animatie voor like/dislike uit het scherm
+    const direction = action === 'like' ? 1 : -1
+    card.style.transition = 'transform 0.3s ease-out'
+    card.style.transform = `translateX(${direction * 1000}px) rotate(${direction * 45}deg)`
+
+    // Data naar de server sturen
+    const res = await fetch(`/${action}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            track_id: trackId,
+            track_name: trackName,
+            track_artists: trackArtists,
+            track_images: trackImages,
+            action: action
+        })
+    })
+
+    // Als de response ok is, haal een nieuwe recommendation op
+    if (res.ok) {
+        // Haal nieuwe recommendation op
+        const newRecommendation = await fetchNewRecommendation()
+        const newCard = createCardElement(newRecommendation)
+        // Voeg nieuwe card toe aan de container
+        cardsContainer.appendChild(newCard)
+    }
+}
+
+// Haal nieuwe recommendation op
+async function fetchNewRecommendation() {
+    const res = await fetch('/new-recommendation')
+    if (res.ok) {
+        const data = await res.json()
+        return data.recommendation
+    }
+    return null
+}
+
+function createCardElement(track) {
+    const card = document.createElement('div')
+    card.classList.add('card')
+
+    // Data variabelen
+    const imageUrl = track.album.images[0].url
+    const trackName = track.name
+    const trackId = track.id
+    const artistNames = track.artists.map(artist => artist.name)
+
+    // Card element content zetten
+    card.innerHTML = `
+        <article class="article">
+            <header style="background-image: url(${imageUrl})"></header>
+            <section>
+                <div>
+                    <h3>${trackName}</h3>
+                    <p>${artistNames.join(', ')}</p>
+                </div>
+            </section>
+        </article>
+        <div class="track-buttons">
+            <form>
+                <input type="hidden" name="track_id" value="${trackId}" class="input" />
+                <input type="hidden" name="track_name" value="${trackName}" class="input" />
+                <input type="hidden" name="track_artists" value='${JSON.stringify(artistNames)}' class="input" />
+                <input type="hidden" name="track_images" value='${JSON.stringify(track.album.images)}' class="input" />
+                <button type="submit" name="action" value="dislike" class="dislike-button">
+                    <img src="images/dislike.svg" alt="dislike icon">
+                </button>
+                <button class="preview-button" data-preview-url="${track.preview_url}">
+                    <svg class="progress-ring" width="100" height="100">
+                        <circle cx="50" cy="50" r="35"></circle>
+                    </svg>
+                    <img src="images/play.svg" alt="play icon">
+                </button>
+                <button type="submit" name="action" value="like" class="like-button">
+                    <img src="images/like.svg" alt="like icon">
+                </button>
+            </form>
+        </div>
+    `
+
+    const innerCard = card.querySelector('.article')
+    
+    // Event listeners toevoegen aan de nieuwe card
+    attachEventListeners(innerCard)
+
+    // Element doorgeven
+    return card
+}
 
 
 

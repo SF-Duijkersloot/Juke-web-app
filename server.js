@@ -290,6 +290,7 @@ app.get('/profiel', async (req, res) => {
 
         // Get user from DB
         const user = await usersCollection.findOne({ _id: req.session.user.id })
+        const recommendations = user.recommendations.reverse()
 
         const totalSwipes = user.recommendations.length;
         const likes = user.recommendations.filter(track => track.action === 'like').length;
@@ -299,6 +300,7 @@ app.get('/profiel', async (req, res) => {
             user: req.session.user, 
             genres: genres,
             DB_user: user,
+            recommendations: recommendations,
             stats: {
                 totalSwipes: totalSwipes,
                 likes: likes,
@@ -507,6 +509,7 @@ app.get('/', async (req, res) =>
             try {
                 const topTracks = await getTopTracks(req);
                 const seedTracks = topTracks.map((track) => track.id);
+                // const seedTracks = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
                 const limit = 2;
                 const recommendedTracks = await getRecommendations(req, seedTracks, limit);
                 res.render('pages/verkennen', { 

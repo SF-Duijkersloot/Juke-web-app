@@ -592,7 +592,7 @@ button {
 }
 
 .cards-container .card:nth-of-type(1) {
-    z-index: 50;
+    z-index: 10;
 }
 
 .card{
@@ -615,7 +615,6 @@ button {
     box-shadow: 0 .05em .5em var(--grey);
     overflow: hidden;
     background: var(--light);
-    /* transition: transform 0.3s ease, opacity 0.3s ease; */
 }
 
 .card article > header {
@@ -699,6 +698,7 @@ button {
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin: 0 1em;
+    position: relative;
 }
 
 .track-buttons button img {
@@ -706,20 +706,37 @@ button {
     height: 2.5em;
 }
 
-.dislike-btn, .like-btn {
-    width: 5em;
-    height: 5em;
-}
-
-.play-btn {
+.track-buttons .preview-button {
     width: 6em;
     height: 6em;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-/* 
-.track-buttons .preview-button {
-    background-color: var(--primary-color)
-} */
+.track-buttons .preview-button img {
+    width: 2.5em;
+    height: 2.5em;
+    position: absolute;
+    z-index: 2;
+}
+
+.track-buttons .progress-ring {
+    position: absolute;
+    scale: -1.2 1.2; /* spiegelt circle */
+    rotate: 90deg; /* start op 12 uur */
+    z-index: 1;
+}
+
+.track-buttons .progress-ring circle {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 0.3em;
+    stroke-dasharray: 250;
+    stroke-dashoffset: -250; 
+}
+
 
 /* ------------------likedpagina----------------- */
 /* #liked {
