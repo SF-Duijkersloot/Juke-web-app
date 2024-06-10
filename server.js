@@ -510,6 +510,7 @@ app.get('/', async (req, res) =>
             try {
                 const topTracks = await getTopTracks(req);
                 const seedTracks = topTracks.map((track) => track.id);
+                // const seedTracks = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
                 const limit = 2;
                 const recommendedTracks = await getRecommendations(req, seedTracks, limit);
                 res.render('pages/verkennen', { 

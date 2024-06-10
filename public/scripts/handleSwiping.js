@@ -4,7 +4,7 @@
 
 ===========================================*/
 
-const swipeThreshold = 20
+const swipeThreshold = 125
 const cards = document.querySelectorAll('.card > .article')
 const cardsContainer = document.querySelector('.cards-container')
 
@@ -47,15 +47,16 @@ function handleSwipe(card, liked) {
 // Houdt huidige positie bij
 function onMove(clientX, startX, card) {
     const offsetX = clientX - startX
+    console.log(offsetX)
     const rotation = offsetX / 20
     card.style.transform = `translateX(${offsetX}px) rotate(${rotation}deg)`
     
-    const songCard = card.closest('.card')
+    const cardElement = card.closest('.card')
 
     if (offsetX > 0) {
-        colorizeButton(songCard, 'like')
+        colorizeButton(cardElement, 'like')
     } else {
-        colorizeButton(songCard, 'dislike')
+        colorizeButton(cardElement, 'dislike')
     }
 }
 
@@ -82,6 +83,7 @@ function attachEventListeners(card) {
             handleSwipe(card, offsetX > swipeThreshold)
         } else {
             card.style.transform = 'translateX(0) rotate(0)'
+            resetButtonColor(card)
         }
     })
 
@@ -107,24 +109,25 @@ function attachEventListeners(card) {
             handleSwipe(card, offsetX > swipeThreshold)
         } else {
             card.style.transform = 'translateX(0) rotate(0)'
+            resetButtonColor(card)
         }
     })
 
 
     // Buttons section
-    const songCard = card.closest('.card')
-    const likeButton = songCard.querySelector('.like-button')
-    const dislikeButton = songCard.querySelector('.dislike-button')
-    const previewButton = songCard.querySelector('.preview-button')
+    const cardElement = card.closest('.card')
+    const likeButton = cardElement.querySelector('.like-button')
+    const dislikeButton = cardElement.querySelector('.dislike-button')
+    const previewButton = cardElement.querySelector('.preview-button')
 
     likeButton.addEventListener('click', (e) => {
-        handleCardEvent(songCard, 'like', e)
-        colorizeButton(songCard, 'like')
+        handleCardEvent(cardElement, 'like', e)
+        colorizeButton(cardElement, 'like')
     })
 
     dislikeButton.addEventListener('click', (e) => {
-        handleCardEvent(songCard, 'dislike', e)
-        colorizeButton(songCard, 'dislike')
+        handleCardEvent(cardElement, 'dislike', e)
+        colorizeButton(cardElement, 'dislike')
     })
 
     previewButton.addEventListener('click', (e) => {
@@ -137,13 +140,13 @@ function attachEventListeners(card) {
 
 /*==========================================\
 
-         Buttons juiste kleur geven
+       Buttons kleuren functionaliteit
 
 ===========================================*/
-function colorizeButton(songCard, action) {
-    const dislikeBtn = songCard.querySelector('.dislike-button')
-    const likeBtn = songCard.querySelector('.like-button')
-    
+function colorizeButton(cardElement, action) {
+    const dislikeBtn = cardElement.querySelector('.dislike-button')
+    const likeBtn = cardElement.querySelector('.like-button')
+
     if (action === 'like') {
         likeBtn.style.backgroundColor = '#a2daa7'
         likeBtn.style.border = '.1em #1cc02a solid'
@@ -155,6 +158,17 @@ function colorizeButton(songCard, action) {
         likeBtn.style.backgroundColor = ''
         likeBtn.style.border = ''
     }
+}
+
+function resetButtonColor(cardElement) {
+    const card = cardElement.closest('.card')
+    const dislikeBtn = card.querySelector('.dislike-button')
+    const likeBtn = card.querySelector('.like-button')
+
+    dislikeBtn.style.backgroundColor = ''
+    dislikeBtn.style.border = ''
+    likeBtn.style.backgroundColor = ''
+    likeBtn.style.border = ''
 }
 
 
@@ -246,10 +260,10 @@ function stopAudioPreview(previewIcon, button) {
         Swipe handling functionaliteit
 
 ===========================================*/
-const handleCardEvent = async (songCard, action, e) => {
+const handleCardEvent = async (cardElement, action, e) => {
     // Timeout zodat de animatie kan afspelen/afronden
     setTimeout(() => {
-        songCard.remove()
+        cardElement.remove()
         
         // Timeout voor soepelere overgang
         setTimeout(() => {
@@ -265,12 +279,12 @@ const handleCardEvent = async (songCard, action, e) => {
     if (e) e.preventDefault()
 
     // Variabelen ophalen uit de form
-    const form = songCard.querySelector('form')
+    const form = cardElement.querySelector('form')
     const trackId = form.querySelector('input[name="track_id"]').value
     const trackName = form.querySelector('input[name="track_name"]').value
     const trackArtists = JSON.parse(form.querySelector('input[name="track_artists"]').value)
     const trackImages = JSON.parse(form.querySelector('input[name="track_images"]').value)
-    const card = songCard.querySelector('.article')
+    const card = cardElement.querySelector('.article')
 
     // Animatie voor like/dislike uit het scherm
     const direction = action === 'like' ? 1 : -1
