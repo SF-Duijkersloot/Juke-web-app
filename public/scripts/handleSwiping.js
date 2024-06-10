@@ -1,22 +1,27 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const swipeThreshold = 200;
+    const swipeThreshold = 20
     const cards = document.querySelectorAll('.card > .article');
+    const cardsContainer = document.querySelector('.cards-container');
 
     function handleSwipe(card, liked) {
+        const currentCard = card.closest('.card');
+    
         if (liked) {
-            console.log('Liked', card);
-            handleButtonClick(card.closest('.card'), 'like');
+            handleCardEvent(currentCard, 'like');
         } else {
-            console.log('Disliked', card);
-            handleButtonClick(card.closest('.card'), 'dislike');
+            handleCardEvent(currentCard, 'dislike');
         }
-
-        // Reset card position
-        card.style.transform = 'translateX(0) rotate(0)';
-
-        // Reset button styles
-        resetButtonStyles(card.closest('.card'));
+    
+        card.style.transition = 'transform 0.3s ease-out';
+    
+        const direction = liked ? 1 : -1;
+        card.style.transform = `translateX(${direction * 1000}px) rotate(${direction * 45}deg)`;
+    
+        setTimeout(() => {
+            currentCard.remove();
+        }, 300);
     }
+
 
     function onMove(clientX, startX, card) {
         const offsetX = clientX - startX;
@@ -48,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         card.addEventListener('touchstart', (e) => {
             startX = e.touches[0].clientX;
             currentX = startX;
+            card.style.transition = ''; 
         });
 
         card.addEventListener('touchmove', (e) => {
@@ -60,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (Math.abs(offsetX) > swipeThreshold) {
                 handleSwipe(card, offsetX > swipeThreshold);
             } else {
-                // Snap back if the threshold isn't met
                 card.style.transform = 'translateX(0) rotate(0)';
                 resetButtonStyles(card.closest('.card'));
             }
@@ -70,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
             startX = e.clientX;
             currentX = startX;
             isDragging = true;
+            card.style.transition = ''; 
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -85,16 +91,60 @@ document.addEventListener('DOMContentLoaded', function() {
             if (Math.abs(offsetX) > swipeThreshold) {
                 handleSwipe(card, offsetX > swipeThreshold);
             } else {
-                // Snap back if the threshold isn't met
                 card.style.transform = 'translateX(0) rotate(0)';
                 resetButtonStyles(card.closest('.card'));
             }
         });
+
+        const songCard = card.closest('.card');
+        const likeButton = songCard.querySelector('.like-button');
+        const dislikeButton = songCard.querySelector('.dislike-button');
+        const previewButton = songCard.querySelector('.preview-button');
+
+        likeButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleCardEvent(songCard, 'like', e);
+            colorizeButton(songCard, 'like');
+            setTimeout(() => {
+                resetButtonStyles(songCard);
+            }, 500)
+        });
+
+        dislikeButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleCardEvent(songCard, 'dislike', e);
+            colorizeButton(songCard, 'dislike');
+            setTimeout(() => {
+                resetButtonStyles(songCard);
+            }, 500)
+        });
+
+        previewButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handlePreviewButtonClick(previewButton);
+        })
+        
     }
 
-    cards.forEach((card) => {
-        attachEventListeners(card);
-    });
+    function colorizeButton(songCard, action) {
+        const dislikeBtn = songCard.querySelector('.dislike-button');
+        const likeBtn = songCard.querySelector('.like-button');
+
+        if (action === 'like') {
+            likeBtn.style.backgroundColor = '#a2daa7';
+            likeBtn.style.border = '.1em #1cc02a solid';
+            dislikeBtn.style.backgroundColor = '';
+            dislikeBtn.style.border = '';
+        } else {
+            dislikeBtn.style.backgroundColor = '#f19f99';
+            dislikeBtn.style.border = '.1em #c0271c solid';
+            likeBtn.style.backgroundColor = '';
+            likeBtn.style.border = '';
+        }
+    }
 
     function resetButtonStyles(songCard) {
         const dislikeBtn = songCard.querySelector('.dislike-button');
@@ -109,14 +159,67 @@ document.addEventListener('DOMContentLoaded', function() {
             likeBtn.style.border = '';
         }
     }
+    
+    let currentAudio = new Audio();
 
-    const handleButtonClick = async (songCard, action, e) => {
-        // e.preventDefault();
+    const handlePreviewButtonClick = (button) => {
+        const previewUrl = button.getAttribute('data-preview-url');
+        const previewIcon = button.querySelector('img');
+
+        if (currentAudio.src !== previewUrl) {
+            currentAudio.src = previewUrl;
+            currentAudio.volume = 0.3;
+            currentAudio.play();
+            previewIcon.src = "images/pause.svg";
+        } else {
+            if (currentAudio.paused) {
+                currentAudio.play();
+                previewIcon.src = "images/pause.svg";
+            } else {
+                currentAudio.pause();
+                previewIcon.src = "images/play.svg";
+            }
+        }
+
+        currentAudio.onended = () => {
+            previewIcon.src = "images/play.svg";
+        };
+    };
+
+    cards.forEach((card) => {
+        attachEventListeners(card);
+    });
+
+
+    const handleCardEvent = async (songCard, action, e) => {
+
+        // Timeout zodat de animatie kan afspelen/afronden
+        setTimeout(() => {
+            songCard.remove();
+            
+            // Timeout voor soepelere overgang
+            setTimeout(() => {
+                // Play the preview of the next card
+                const nextCard = cardsContainer.querySelector('.card:nth-of-type(1)'); // nth-of-type(1) is the second card
+                const previewButton = nextCard.querySelector('.preview-button');
+                handlePreviewButtonClick(previewButton);
+            }, 250)
+
+        }, 250)
+
+        if (e) e.preventDefault();
+
         const form = songCard.querySelector('form');
         const trackId = form.querySelector('input[name="track_id"]').value;
         const trackName = form.querySelector('input[name="track_name"]').value;
         const trackArtists = JSON.parse(form.querySelector('input[name="track_artists"]').value);
         const trackImages = JSON.parse(form.querySelector('input[name="track_images"]').value);
+
+        const card = songCard.querySelector('.article');
+        const direction = action === 'like' ? 1 : -1;
+
+        card.style.transition = 'transform 0.3s ease-out';
+        card.style.transform = `translateX(${direction * 1000}px) rotate(${direction * 45}deg)`;
 
         const res = await fetch(`/${action}`, {
             method: 'POST',
@@ -133,19 +236,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (res.ok) {
-            // Remove the liked/disliked recommendation from the page
-            songCard.remove();
-
-            // Fetch a new recommendation
+            // Fetch the next recommendation
             const newRecommendation = await fetchNewRecommendation();
-            if (newRecommendation) {
-                // Append the new recommendation to the page
-                const cardsContainer = document.querySelector('.cards-container');
-                const newCard = createCardElement(newRecommendation);
-                cardsContainer.appendChild(newCard);
-            }
-        }
-    };
+            setTimeout(() => {
+                if (newRecommendation) {
+                    // Create a new card for the next recommendation
+                    const newCard = createCardElement(newRecommendation);
+                    cardsContainer.appendChild(newCard);
+                }
+            }, 300);
+        };
+    }
 
     async function fetchNewRecommendation() {
         const res = await fetch('/new-recommendation');
@@ -157,68 +258,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return null;
     }
-    
+
+    let cardsIndex = 0;
+
     function createCardElement(track) {
         const card = document.createElement('div');
         card.classList.add('card');
-        // card.style.zIndex = 0;
-    
+        card.classList.add('card-' + cardsIndex);
+        cardsIndex++;
+
         const imageUrl = track.album.images[0].url;
         const trackName = track.name;
         const trackId = track.id;
         const artistNames = track.artists.map(artist => artist.name);
-    
+
         card.innerHTML = `
-            <div class="card">
-                <article class="article">
-                    <header style="background-image: url(${imageUrl})"></header>
-                    <section>
-                        <div>
-                            <h3>${trackName}</h3>
-                            <p>${artistNames.join(', ')}</p>
-                        </div>
-                        <aside>
-                            <p>${artistNames.join(', ')}</p>
-                        </aside>
-                    </section>
-                </article>
-                <div class="track-buttons">
-                    <form>
-                        <input type="hidden" name="track_id" value="${trackId}" class="input" />
-                        <input type="hidden" name="track_name" value="${trackName}" class="input" />
-                        <input type="hidden" name="track_artists" value='${JSON.stringify(artistNames)}' class="input" />
-                        <input type="hidden" name="track_images" value='${JSON.stringify(track.album.images)}' class="input" />
-                        <button type="submit" name="action" value="dislike" class="dislike-button">
-                            <img src="images/dislike.svg" alt="dislike icon">
-                        </button>
-                        <button class="preview-button" data-preview-url="${track.preview_url}">
-                            <img src="images/play.svg" alt="play icon">
-                        </button>
-                        <button type="submit" name="action" value="like" class="like-button">
-                            <img src="images/Like.svg" alt="like icon">
-                        </button>
-                    </form>
-                </div>
+            <article class="article">
+                <header style="background-image: url(${imageUrl})"></header>
+                <section>
+                    <div>
+                        <h3>${trackName}</h3>
+                        <p>${artistNames.join(', ')}</p>
+                    </div>
+                </section>
+            </article>
+            <div class="track-buttons">
+                <form>
+                    <input type="hidden" name="track_id" value="${trackId}" class="input" />
+                    <input type="hidden" name="track_name" value="${trackName}" class="input" />
+                    <input type="hidden" name="track_artists" value='${JSON.stringify(artistNames)}' class="input" />
+                    <input type="hidden" name="track_images" value='${JSON.stringify(track.album.images)}' class="input" />
+                    <button type="submit" name="action" value="dislike" class="dislike-button">
+                        <img src="images/dislike.svg" alt="dislike icon">
+                    </button>
+                    <button class="preview-button" data-preview-url="${track.preview_url}">
+                        <img src="images/play.svg" alt="play icon">
+                    </button>
+                    <button type="submit" name="action" value="like" class="like-button">
+                        <img src="images/Like.svg" alt="like icon">
+                    </button>
+                </form>
             </div>
         `;
-    
-        // Add event listeners to the new card
-        const likeButton = card.querySelector('.like-button');
-        const dislikeButton = card.querySelector('.dislike-button');
-    
-        likeButton.addEventListener('click', (e) => handleButtonClick(card, 'like', e));
-        dislikeButton.addEventListener('click', (e) => handleButtonClick(card, 'dislike', e));
-    
-        const previewButton = card.querySelector('.preview-button');
-        previewButton.addEventListener('click', (e) => handlePreviewButtonClick(previewButton, e));
-    
-        attachEventListeners(card);
-    
+        
+        const innerCard = card.querySelector('.article');
+        attachEventListeners(innerCard);
+
         return card;
     }
-    
-
-})
+});
 
 
 
