@@ -18,11 +18,8 @@
             <p>Juke. algoritme</p>
         </section>
             <div class="cards-container">
-                <% let cardIndex = 0 %>
-
                 <% tracks.forEach(track => { %>
-                    <% cardIndex++ %>
-                    <div class="card" data-card-index="<%= cardIndex %>">
+                    <div class="card">
                         <article class="article">
                             <header style="background-image: url(<%= track.album.images[0].url %>)"></header>
                             <section>
