@@ -659,8 +659,8 @@ button {
 
 .track-buttons .progress-ring {
     position: absolute;
-    width: 6.75em;
-    height: 6.75em;
+    scale: -1.2 1.2; /* spiegelt circle */
+    rotate: 90deg; /* start op 12 uur */
     z-index: 1;
 }
 
@@ -668,9 +668,8 @@ button {
     fill: none;
     stroke: var(--primary);
     stroke-width: 0.3em;
-    stroke-dasharray: 440; /* circumference of the circle */
-    stroke-dashoffset: 440; /* initially hide the circle */
-    transition: stroke-dashoffset 0.1s linear;
+    stroke-dasharray: 250;
+    stroke-dashoffset: -250; 
 }
 
 

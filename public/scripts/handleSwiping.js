@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const cards = document.querySelectorAll('.card > .article');
     const cardsContainer = document.querySelector('.cards-container');
 
+    let currentAudio = new Audio();
+    let animationFrameId;
+
     function handleSwipe(card, liked) {
         const currentCard = card.closest('.card');
     
@@ -159,32 +162,89 @@ document.addEventListener('DOMContentLoaded', function() {
             likeBtn.style.border = '';
         }
     }
+
+
+
+
+    let startTime = null;
+    let pauseTime = null;
+
+    function updateProgressRing(button, progress) {
+        const circle = button.querySelector('.progress-ring circle');
+        if (circle) {
+            const radius = circle.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (progress / 100) * circumference;
+            circle.style.strokeDashoffset = - offset;
+        }
+    }
     
-    let currentAudio = new Audio();
-
-    const handlePreviewButtonClick = (button) => {
-        const previewUrl = button.getAttribute('data-preview-url');
-        const previewIcon = button.querySelector('img');
-
-        if (currentAudio.src !== previewUrl) {
-            currentAudio.src = previewUrl;
-            currentAudio.volume = 0.3;
-            currentAudio.play();
-            previewIcon.src = "images/pause.svg";
-        } else {
-            if (currentAudio.paused) {
-                currentAudio.play();
-                previewIcon.src = "images/pause.svg";
+    function animateProgress(button, duration) {
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+            const progress = Math.min((elapsed / duration) * 100, 100);
+            updateProgressRing(button, progress);
+    
+            if (progress < 100) {
+                animationFrameId = requestAnimationFrame(step);
             } else {
-                currentAudio.pause();
-                previewIcon.src = "images/play.svg";
+                cancelAnimationFrame(animationFrameId);
             }
         }
-
+    
+        animationFrameId = requestAnimationFrame(step);
+    }
+    
+    function handlePreviewButtonClick(button) {
+        const previewUrl = button.getAttribute('data-preview-url');
+        const previewIcon = button.querySelector('img');
+    
+        if (currentAudio.src !== previewUrl) {
+            startAudioPreview(previewUrl, previewIcon, button);
+        } else {
+            if (currentAudio.paused) {
+                resumeAudioPreview(previewIcon, button);
+            } else {
+                pauseAudioPreview(previewIcon);
+            }
+        }
+    
         currentAudio.onended = () => {
-            previewIcon.src = "images/play.svg";
+            stopAudioPreview(previewIcon, button);
         };
-    };
+    }
+    
+    function startAudioPreview(previewUrl, previewIcon, button) {
+        currentAudio.src = previewUrl;
+        currentAudio.volume = 0.3;
+        currentAudio.play();
+        previewIcon.src = "images/pause.svg";
+        startTime = performance.now();
+        animateProgress(button, 30000); // 30 seconds for the preview
+    }
+    
+    function resumeAudioPreview(previewIcon, button) {
+        currentAudio.play();
+        previewIcon.src = "images/pause.svg";
+        startTime += performance.now() - pauseTime; // Adjust start time based on pause time
+        animateProgress(button, 30000 - (performance.now() - pauseTime)); // resume animation
+    }
+    
+    function pauseAudioPreview(previewIcon) {
+        currentAudio.pause();
+        previewIcon.src = "images/play.svg";
+        pauseTime = performance.now(); // Store pause time
+        cancelAnimationFrame(animationFrameId);
+    }
+    
+    function stopAudioPreview(previewIcon, button) {
+        previewIcon.src = "images/play.svg";
+        updateProgressRing(button, 0); // reset progress
+        cancelAnimationFrame(animationFrameId);
+    }
+    
+
 
     cards.forEach((card) => {
         attachEventListeners(card);
@@ -292,10 +352,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         <img src="images/dislike.svg" alt="dislike icon">
                     </button>
                     <button class="preview-button" data-preview-url="${track.preview_url}">
+                        <svg class="progress-ring" width="100" height="100">
+                            <circle cx="50" cy="50" r="35"></circle>
+                        </svg>
                         <img src="images/play.svg" alt="play icon">
                     </button>
                     <button type="submit" name="action" value="like" class="like-button">
-                        <img src="images/Like.svg" alt="like icon">
+                        <img src="images/like.svg" alt="like icon">
                     </button>
                 </form>
             </div>
