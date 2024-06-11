@@ -891,7 +891,7 @@ button {
     left: 1em;
     bottom: 1em;
     align-items: start;
-    width:20%;
+    max-width:20%;
     padding: 1em 2em;
     background-color: var(--dark);
     border-radius: 0;
