@@ -965,3 +965,7 @@ app.listen(port, () => {
 app.get('/liked-recommendations', (req, res) => {
     res.render('pages/liked', { user: req.session.user})
 })
+
+app.get('/disliked-recommendations', (req, res) => {
+    res.render('pages/disliked', { user: req.session.user})
+})
