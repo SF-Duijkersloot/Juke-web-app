@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="Juke.png">
+    <link rel="stylesheet" href="style.css">
+    <title>Juke.</title>
+</head>
+
+<body>
+    <header>
+        <%- include('../partials/nav', { user: user }) %>
+    </header>
+
+    <main>
+        <a href="/zoek" class="backArrow"><img src="/images/Arrow.svg"></a>
+        <h1>Zoek resultaten</h1>
+        <form action="/search" method="get">
+            <input type="text" name="q" class="searchBar" placeholder="Zoeken..." value="<%= query %>">
+            <button type="submit" class="searchButton">Search</button>
+        </form>
+
+        <section class="searchResultList">
+            <h2>Nummers</h2>
+            <ul>
+                <% results.tracks.items.forEach(track => { %>
+                <li>
+                    <!-- <img src="images/<%= track.image %>" alt="<%= track.name %>"> album of artiest? -->
+                    <img src="/public/images/pop.jpg"> 
+                    <div class="nummerDiv">
+                        <p><%= track.name %></p>
+                        <p><%= track.artists.map(artist => artist.name).join(', ') %></p>
+                    </div>
+                    <form>
+                        <input type="hidden" name="track" value="<%= track.name %>">
+                        <input type="submit" value="Swipe" class="swipeButton">
+                    </form>
+                    <!-- Toevoegen van de knop met het track ID en het type -->
+                    <!-- <a href="/search-recommendations?seedUri=<%= track.id %>&seed_type=seed_tracks"
+                        class="recommendation-button">Get Recommendations</a> -->
+                </li>
+                <% }); %>
+            </ul>
+        </section>
+
+        <section class="searchResultList">
+            <h2>Artiesten</h2>
+            <ul>
+                <% results.artists.items.forEach(artist => { %>
+                <li>
+                    <img src="images/<%= artist.image %>" alt="<%= artist.name %>">
+                    <div>
+                        <p><%= artist.name %></p>
+                    </div>
+                    <form>
+                        <input type="hidden" name="artist" value="<%= artist.name %>">
+                        <input type="submit" value="Swipe" class="swipeButton">
+                    </form>
+                    <!-- <a href="/search-recommendations?seedUri=<%= artist.id %>&seed_type=seed_artists"
+                        class="recommendation-button">Get Recommendations</a> -->
+                </li>
+                <% }); %>
+            </ul>
+        </section>
+    </main>
+
+    <script defer src="scripts/app.js"></script>
+</body>
+
+</html>

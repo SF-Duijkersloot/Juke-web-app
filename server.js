@@ -751,6 +751,26 @@ async function registerSongCollection(req) {
                   Search bar
 
 ===========================================*/
+// app.get('/search', async (req, res) => {
+//     const query = req.query.q;
+
+//     if (!query) {
+//         return res.status(400).send({ error: 'No query provided' });
+//     }
+
+//     try {
+//         const results = await fetchWebApi(
+//             req,
+//             `v1/search?q=${encodeURIComponent(query)}&type=track,artist,album&limit=10`,
+//             'GET'
+//         );
+
+//         res.render('searchResults', { results: results, query: query });
+//     } catch (error) {
+//         console.error('Error performing search:', error);
+//         res.status(500).json({ error: 'An error occurred while performing search.' });
+//     }
+// });
 app.get('/search', async (req, res) => {
     const query = req.query.q;
 
@@ -765,12 +785,17 @@ app.get('/search', async (req, res) => {
             'GET'
         );
 
-        res.render('searchResults', { results: results, query: query });
+        // Get user information here, assuming you have a way to do so
+        // const user = req.user; // For example, if user information is stored in the request object
+
+        // Pass both results and user to the searchResults view
+        res.render('pages/searchResults', { results: results, query: query, user: req.session.user });
     } catch (error) {
         console.error('Error performing search:', error);
         res.status(500).json({ error: 'An error occurred while performing search.' });
     }
 });
+
 
 
 
