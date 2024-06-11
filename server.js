@@ -473,7 +473,7 @@ app.get('/search-recommendations', async (req, res) => {
         }
         const limit = 2;
         const recommendedTracks = await getRecommendations(req, [seedUri], limit, seed_type);
-        res.render('pages/recommendations', { tracks: recommendedTracks });
+        res.render('pages/recommendations', { tracks: recommendedTracks, user: req.session.user });
     } catch (error) {
         console.error('Error fetching recommendations:', error);
         res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
