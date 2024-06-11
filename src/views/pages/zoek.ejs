@@ -12,7 +12,9 @@
 <body>
     <header id="searchHeader">
         <%- include('../partials/nav', { user: user }) %>
+
     </header>
+
 
     <main>
         <h1>Zoek</h1>
@@ -26,16 +28,17 @@
             <p>Swipe en ontdek op basis van een specifieke genre</p>
             <ul>
                 <% genres.slice(0, 5).forEach(genre => { %>
-                <li>
-                    <div>
-                        <img src="images/<%= genre.image %>" alt="<%= genre.name %>">
-                        <p><%= genre.name %></p>
-                    </div>
-                    <form>
-                        <input type="hidden" name="genre" value="<%= genre.name %>">
-                        <input type="submit" value="Swipe" class="swipeButton">
-                    </form>
-                </li>
+                    <li>
+                        <div>
+                            <img src="<%= genre.image %>" alt="<%= genre.name %>">
+                            <p><%= genre.name %></p>
+                        </div>
+                        <form action="/search-recommendations" method="get">
+                            <input type="hidden" name="seedUri" value="<%= genre.name %>">
+                            <input type="hidden" name="seed_type" value="genre">
+                            <input type="submit" value="Swipe" class="swipeButton">
+                        </form>
+                    </li>
                 <% }) %>
             </ul>
             <a href="/genres" class="moreLink">Meer weergeven</a>
@@ -45,19 +48,39 @@
             <p>Swipe en ontdek op basis van een specifieke artiest</p>
             <ul>
                 <% artists.forEach(artist => { %>
-                <li>
-                    <div>
-                        <img src="images/<%= artist.image %>" alt="<%= artist.name %>">
-                        <p><%= artist.name %></p>
-                    </div>
-                    <form>
-                        <input type="hidden" name="artist" value="<%= artist.name %>">
-                        <input type="submit" value="Swipe" class="swipeButton">
-                    </form>
-                </li>
+                    <li>
+                        <div>
+                            <img src="<%= artist.images[0].url %>" alt="<%= artist.name %>">
+                            <p><%= artist.name %></p>
+                        </div>
+                        <form action="/search-recommendations" method="get">
+                            <input type="hidden" name="seedUri" value="<%= artist.id %>">
+                            <input type="hidden" name="seed_type" value="artist">
+                            <input type="submit" value="Swipe" class="swipeButton">
+                        </form>
+                    </li>
                 <% }) %>
             </ul>
         </section>
+        <section class="searchList">
+            <h2>Jouw topnummers</h2>
+            <p>Swipe en ontdek op basis van een specifiek nummer</p>
+            <ul>
+                <% topTracks.forEach(track => { %>
+                    <li>
+                        <div>
+                            <img src="<%= track.album.images[0].url %>" alt="<%= track.name %>">
+                            <p><%= track.name %> - <%= track.artists.map(artist => artist.name).join(', ') %></p>
+                        </div>
+                        <form>
+                            <input type="hidden" name="track" value="<%= track.id %>">
+                            <input type="submit" value="Swipe" class="swipeButton">
+                        </form>
+                    </li>
+                <% }) %>
+            </ul>
+        </section>
+        
     </main>
 
     <script defer src="scripts/app.js"></script>
