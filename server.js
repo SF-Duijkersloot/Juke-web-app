@@ -746,7 +746,6 @@ async function registerSongCollection(req) {
                   Search bar
 
 ===========================================*/
-
 // app.get('/search', async (req, res) => {
 //     const query = req.query.q;
 
@@ -783,10 +782,11 @@ app.get('/search', async (req, res) => {
         );
 
         // Get user information here, assuming you have a way to do so
-        const user = req.user; // For example, if user information is stored in the request object
+      
+        // const user = req.user; // For example, if user information is stored in the request object
 
         // Pass both results and user to the searchResults view
-        res.render('/searchResults', { results: results, query: query, user: req.session.user });
+        res.render('pages/searchResults', { results: results, query: query, user: req.session.user });
 
     } catch (error) {
         console.error('Error performing search:', error);
@@ -942,6 +942,7 @@ async function getGenresFromSpotifyAPI(req) {
         throw new Error('An error occurred while fetching genres from Spotify API.');
     }
 }
+
 
 
 

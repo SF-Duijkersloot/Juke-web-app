@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 
 <head>
     <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/x-icon" href="images/Juke.png">
-        <link rel="stylesheet" href="/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="images/Juke.png">
+    <link rel="stylesheet" href="style.css">
+    <title>Juke.</title>
 </head>
 
 <body>
@@ -64,7 +65,7 @@
             <h3>Jouw top genres</h3>
             <div id="statsGenre">
                 <% genres.forEach(genre => { %>
-                    <p><%= genre.name %></p>
+                <p><%= genre.name %></p>
                 <% }) %>
             </div>
         </section>
@@ -81,6 +82,7 @@
                             <p><%= track.action %></p>
                         </div>
                     </div>
+                </div>
                 <% }) %>
             </div>
         </section>

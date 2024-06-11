@@ -1,26 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zoek</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="icon" type="image/x-icon" href="Juke.png">
+    <link rel="stylesheet" href="style.css">
+    <title>Juke.</title>
 </head>
 
 <body>
     <header id="searchHeader">
         <%- include('../partials/nav', { user: user }) %>
-        <h1>Zoek</h1>
 
-        <!-- Zoekformulier -->
-        <form action="/search" method="get">
-            <input type="text" name="q" placeholder="Search for music...">
-            <button type="submit">Search</button>
-        </form> 
     </header>
 
+
     <main>
+        <h1>Zoek</h1>
+        <!-- Zoekformulier -->
+        <form action="/search" method="get">
+            <input type="text" name="q" class="searchBar" placeholder="Zoeken...">
+            <button type="submit">Search</button>
+        </form>
         <section class="searchList">
             <h2>Top genres</h2>
             <p>Swipe en ontdek op basis van een specifieke genre</p>
