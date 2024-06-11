@@ -458,7 +458,7 @@ app.get('/recommendations', async (req, res) => {
         const limit = 2;
         const seed_type = 'seed_tracks'
         const recommendedTracks = await getRecommendations(req, seedUri, limit, seed_type);
-        res.render('recommendations', { tracks: recommendedTracks });
+        res.render('pages/recommendations', { tracks: recommendedTracks });
     } catch (error) {
         console.error('Error fetching recommendations:', error);
         res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
@@ -473,7 +473,7 @@ app.get('/search-recommendations', async (req, res) => {
         }
         const limit = 2;
         const recommendedTracks = await getRecommendations(req, [seedUri], limit, seed_type);
-        res.render('recommendations', { tracks: recommendedTracks });
+        res.render('pages/recommendations', { tracks: recommendedTracks });
     } catch (error) {
         console.error('Error fetching recommendations:', error);
         res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
@@ -769,6 +769,34 @@ async function registerSongCollection(req) {
 //     }
 // });
 
+// app.get('/search', async (req, res) => {
+//     const query = req.query.q;
+
+//     if (!query) {
+//         return res.status(400).send({ error: 'No query provided' });
+//     }
+
+//     try {
+//         const results = await fetchWebApi(
+//             req,
+//             `v1/search?q=${encodeURIComponent(query)}&type=track,artist,album&limit=10`,
+//             'GET'
+//         );
+
+//         // Get user information here, assuming you have a way to do so
+      
+//         // const user = req.user; // For example, if user information is stored in the request object
+
+//         // Pass both results and user to the searchResults view
+//         res.render('pages/searchResults', { results: results, query: query, user: req.session.user });
+
+//     } catch (error) {
+//         console.error('Error performing search:', error);
+//         res.status(500).json({ error: 'An error occurred while performing search.' });
+//     }
+// });
+
+
 app.get('/search', async (req, res) => {
     const query = req.query.q;
 
@@ -783,11 +811,6 @@ app.get('/search', async (req, res) => {
             'GET'
         );
 
-        // Get user information here, assuming you have a way to do so
-      
-        // const user = req.user; // For example, if user information is stored in the request object
-
-        // Pass both results and user to the searchResults view
         res.render('pages/searchResults', { results: results, query: query, user: req.session.user });
 
     } catch (error) {
@@ -795,8 +818,6 @@ app.get('/search', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while performing search.' });
     }
 });
-
-
 
 
 /*==========================================\

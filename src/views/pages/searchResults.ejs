@@ -27,8 +27,8 @@
             <ul>
                 <% results.tracks.items.forEach(track => { %>
                 <li>
-                    <!-- <img src="images/<%= track.image %>" alt="<%= track.name %>"> album of artiest? -->
-                    <img src="/public/images/pop.jpg"> 
+                    <img src="<%= track.album.images[0]?.url %>" alt="<%= track.name %>"> 
+                    <!-- <img src="/public/images/pop.jpg">  -->
                     <div class="nummerDiv">
                         <p><%= track.name %></p>
                         <p><%= track.artists.map(artist => artist.name).join(', ') %></p>
@@ -38,8 +38,8 @@
                         <input type="submit" value="Swipe" class="swipeButton">
                     </form>
                     <!-- Toevoegen van de knop met het track ID en het type -->
-                    <!-- <a href="/search-recommendations?seedUri=<%= track.id %>&seed_type=seed_tracks"
-                        class="recommendation-button">Get Recommendations</a> -->
+                    <a href="/search-recommendations?seedUri=<%= track.id %>&seed_type=seed_tracks"
+                        class="recommendation-button">Get Recommendations</a>
                 </li>
                 <% }); %>
             </ul>
@@ -50,7 +50,7 @@
             <ul>
                 <% results.artists.items.forEach(artist => { %>
                 <li>
-                    <img src="images/<%= artist.image %>" alt="<%= artist.name %>">
+                    <img src="<%= artist.images[0]?.url %>" alt="<%= artist.name %>">
                     <div>
                         <p><%= artist.name %></p>
                     </div>
@@ -58,8 +58,8 @@
                         <input type="hidden" name="artist" value="<%= artist.name %>">
                         <input type="submit" value="Swipe" class="swipeButton">
                     </form>
-                    <!-- <a href="/search-recommendations?seedUri=<%= artist.id %>&seed_type=seed_artists"
-                        class="recommendation-button">Get Recommendations</a> -->
+                    <a href="/search-recommendations?seedUri=<%= artist.id %>&seed_type=seed_artists"
+                        class="recommendation-button">Get Recommendations</a>
                 </li>
                 <% }); %>
             </ul>
