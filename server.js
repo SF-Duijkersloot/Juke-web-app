@@ -452,9 +452,9 @@ function hasPreviewUrl(track) {
 
 app.get('/recommendations', async (req, res) => {
     try {
-        // const topTracks = await getTopTracks(req);
-        // const seedUri = topTracks.map((track) => track.id);
-        const seedUri = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
+        const topTracks = await getTopTracks(req);
+        const seedUri = topTracks.map((track) => track.id);
+        // const seedUri = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
         const limit = 2;
         const seed_type = 'seed_tracks'
         const recommendedTracks = await getRecommendations(req, seedUri, limit, seed_type);
@@ -483,9 +483,9 @@ app.get('/search-recommendations', async (req, res) => {
 
 app.get('/new-recommendation', async (req, res) => {
     try {
-        // const topTracks = await getTopTracks(req);
-        // const seedTracks = topTracks.map((track) => track.id);
-        const seedTracks = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
+        const topTracks = await getTopTracks(req);
+        const seedTracks = topTracks.map((track) => track.id);
+        // const seedTracks = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
         const limit = 1;
         const recommendedTracks = await getRecommendations(req, seedTracks, limit);
         res.json({ recommendation: recommendedTracks[0] });
@@ -502,9 +502,9 @@ app.get('/', async (req, res) =>
     {
         if (req.session.loggedIn) {
             try {
-                // const topTracks = await getTopTracks(req);
-                // const seedTracks = topTracks.map((track) => track.id);
-                const seedTracks = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
+                const topTracks = await getTopTracks(req);
+                const seedTracks = topTracks.map((track) => track.id);
+                // const seedTracks = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
                 const limit = 2;
                 const recommendedTracks = await getRecommendations(req, seedTracks, limit);
                 res.render('pages/verkennen', { 
