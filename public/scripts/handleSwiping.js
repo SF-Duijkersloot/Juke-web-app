@@ -282,6 +282,7 @@ const handleCardEvent = async (cardElement, action, e) => {
     const form = cardElement.querySelector('form')
     const trackId = form.querySelector('input[name="track_id"]').value
     const trackName = form.querySelector('input[name="track_name"]').value
+    const isSearch = form.querySelector('input[name="isSearch"]')?.value || null
     const trackArtists = JSON.parse(form.querySelector('input[name="track_artists"]').value)
     const trackImages = JSON.parse(form.querySelector('input[name="track_images"]').value)
     const card = cardElement.querySelector('.article')
@@ -302,29 +303,32 @@ const handleCardEvent = async (cardElement, action, e) => {
             track_name: trackName,
             track_artists: trackArtists,
             track_images: trackImages,
-            action: action
+            action: action,
+            isSearch: isSearch
         })
     })
 
     // Als de response ok is, haal een nieuwe recommendation op
     if (res.ok) {
         // Haal nieuwe recommendation op
-        const newRecommendation = await fetchNewRecommendation()
-        const newCard = createCardElement(newRecommendation)
+        const newRecommendation = await fetchNewRecommendation(isSearch, trackId, 'seed_tracks');
+        const newCard = createCardElement(newRecommendation);
         // Voeg nieuwe card toe aan de container
-        cardsContainer.appendChild(newCard)
+        cardsContainer.appendChild(newCard);
     }
 }
 
 // Haal nieuwe recommendation op
-async function fetchNewRecommendation() {
-    const res = await fetch('/new-recommendation')
+async function fetchNewRecommendation(isSearch, seedUri, seedType) {
+    const res = await fetch(`/new-recommendation?seedUri=${seedUri}&seed_type=${seedType}&isSearch=${isSearch}`);
     if (res.ok) {
-        const data = await res.json()
-        return data.recommendation
+        const data = await res.json();
+        return data.recommendation;
     }
-    return null
+    return null;
 }
+
+
 
 function createCardElement(track) {
     const card = document.createElement('div')

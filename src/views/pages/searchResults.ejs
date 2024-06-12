@@ -28,18 +28,11 @@
                 <% results.tracks.items.forEach(track => { %>
                 <li>
                     <img src="<%= track.album.images[0]?.url %>" alt="<%= track.name %>"> 
-                    <!-- <img src="/public/images/pop.jpg">  -->
                     <div class="nummerDiv">
                         <p><%= track.name %></p>
                         <p><%= track.artists.map(artist => artist.name).join(', ') %></p>
                     </div>
-                    <form>
-                        <input type="hidden" name="track" value="<%= track.name %>">
-                        <input type="submit" value="Swipe" class="swipeButton">
-                    </form>
-                    <!-- Toevoegen van de knop met het track ID en het type -->
-                    <a href="/search-recommendations?seedUri=<%= track.id %>&seed_type=seed_tracks"
-                        class="recommendation-button">Get Recommendations</a>
+                    <a href="/search-recommendations?seedUri=<%= track.id %>&seed_type=seed_tracks" class="recommendation-button">Get Recommendations</a>
                 </li>
                 <% }); %>
             </ul>
@@ -54,12 +47,7 @@
                     <div>
                         <p><%= artist.name %></p>
                     </div>
-                    <form>
-                        <input type="hidden" name="artist" value="<%= artist.name %>">
-                        <input type="submit" value="Swipe" class="swipeButton">
-                    </form>
-                    <a href="/search-recommendations?seedUri=<%= artist.id %>&seed_type=seed_artists"
-                        class="recommendation-button">Get Recommendations</a>
+                    <a href="/search-recommendations?seedUri=<%= artist.id %>&seed_type=seed_artists" class="recommendation-button">Get Recommendations</a>
                 </li>
                 <% }); %>
             </ul>

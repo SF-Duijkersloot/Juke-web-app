@@ -91,6 +91,7 @@
                             <form>
                                 <input type="hidden" name="track_id" value="<%= track.id %>" class="input" />
                                 <input type="hidden" name="track_name" value="<%= track.name %>" class="input" />
+                                <input type="hidden" name="isSearch" value="true" class="input" /> <!-- Dit is waar we de isSearch-parameter instellen -->
                                 <input type="hidden" name="track_artists" value="<%= JSON.stringify(track.artists.map(artist => artist.name)) %>" class="input" />
                                 <input type="hidden" name="track_images" value="<%= JSON.stringify(track.album.images) %>" class="input" />
                                 <button type="submit" name="action" value="dislike" class="dislike-button">

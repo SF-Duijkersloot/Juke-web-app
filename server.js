@@ -389,19 +389,32 @@ async function getTopTracks(req)
 
 ===========================================*/
 
-async function getRecommendations(req, seedTracks, limit, track_id, type) {
+async function getRecommendations(req, seedTracks, limit, seed_type) {
     try {
         let approvedRecommendations = [];
         let remainingLimit = limit;
+        let recommendations
+        console.log('seed_type', seed_type)
 
         while (remainingLimit > 0) {
-            const recommendations = (
-                await fetchWebApi(
-                    req,
-                    `v1/recommendations?limit=${remainingLimit}&seed_tracks=${seedTracks.join(',')}`,
-                    'GET'
-                )
-            ).tracks;
+            if(seed_type == 'seed_tracks') {
+                recommendations = (
+                    await fetchWebApi(
+                        req,
+                        `v1/recommendations?limit=${remainingLimit}&seed_tracks=${seedTracks.join(',')}`,
+                        'GET'
+                    )
+                ).tracks;
+            }
+            else if(seed_type == 'seed_artists') {
+                recommendations = (
+                    await fetchWebApi(
+                        req,
+                        `v1/recommendations?limit=${remainingLimit}&seed_tracks=${seedTracks.join(',')}`,
+                        'GET'
+                    )
+                ).tracks;
+            }
 
             const filteredRecommendations = await filterRecommendations(req, recommendations);
             approvedRecommendations.push(...filteredRecommendations);
@@ -480,20 +493,29 @@ app.get('/search-recommendations', async (req, res) => {
     }
 });
 
-
 app.get('/new-recommendation', async (req, res) => {
     try {
-        const topTracks = await getTopTracks(req);
-        const seedTracks = topTracks.map((track) => track.id);
-        // const seedTracks = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
         const limit = 1;
-        const recommendedTracks = await getRecommendations(req, seedTracks, limit);
-        res.json({ recommendation: recommendedTracks[0] });
+        const { isSearch, seedUri, seed_type } = req.query;
+
+        console.log("Req query", req.query);
+
+        if (isSearch === "true" && seedUri && seed_type) {
+            console.log("isSearch is true yippie");
+            const recommendedTracks = await getRecommendations(req, [seedUri], limit, seed_type);
+            res.json({ recommendation: recommendedTracks[0] });
+        } else {
+            const topTracks = await getTopTracks(req);
+            const seedTracks = topTracks.map((track) => track.id);
+            const recommendedTracks = await getRecommendations(req, seedTracks, limit, 'seed_tracks');
+            res.json({ recommendation: recommendedTracks[0] });
+        }
     } catch (error) {
         console.error('Error fetching new recommendation:', error);
         res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' });
     }
 });
+
 
 
 // --------------------------------------
@@ -748,54 +770,6 @@ async function registerSongCollection(req) {
                   Search bar
 
 ===========================================*/
-// app.get('/search', async (req, res) => {
-//     const query = req.query.q;
-
-//     if (!query) {
-//         return res.status(400).send({ error: 'No query provided' });
-//     }
-
-//     try {
-//         const results = await fetchWebApi(
-//             req,
-//             `v1/search?q=${encodeURIComponent(query)}&type=track,artist,album&limit=10`,
-//             'GET'
-//         );
-
-//         res.render('searchResults', { results: results, query: query });
-//     } catch (error) {
-//         console.error('Error performing search:', error);
-//         res.status(500).json({ error: 'An error occurred while performing search.' });
-//     }
-// });
-
-// app.get('/search', async (req, res) => {
-//     const query = req.query.q;
-
-//     if (!query) {
-//         return res.status(400).send({ error: 'No query provided' });
-//     }
-
-//     try {
-//         const results = await fetchWebApi(
-//             req,
-//             `v1/search?q=${encodeURIComponent(query)}&type=track,artist,album&limit=10`,
-//             'GET'
-//         );
-
-//         // Get user information here, assuming you have a way to do so
-      
-//         // const user = req.user; // For example, if user information is stored in the request object
-
-//         // Pass both results and user to the searchResults view
-//         res.render('pages/searchResults', { results: results, query: query, user: req.session.user });
-
-//     } catch (error) {
-//         console.error('Error performing search:', error);
-//         res.status(500).json({ error: 'An error occurred while performing search.' });
-//     }
-// });
-
 
 app.get('/search', async (req, res) => {
     const query = req.query.q;
