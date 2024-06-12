@@ -20,6 +20,7 @@
     --p1: 1.1em;
 }
 
+
 /* Algemene stijlen */
 
 body {
@@ -162,7 +163,13 @@ button {
 
 .swipeButton:hover {
     scale: 1.1;
-    filter: drop-shadow(var(--primary) 0.1em 0.1em 0.9em);
+    background-color: var(--light);
+    border: .15em solid var(--primary);
+}
+
+.swipeButton:active {
+    background-color: var(--light);
+    border: .15em solid var(--primary);
 }
 
 .moreLink {
@@ -175,7 +182,6 @@ button {
 .backHeader {
     display: flex;
     align-items: center;
-    justify-content: center;
     position: relative;
 }
 
@@ -304,7 +310,7 @@ button {
     margin-bottom: .7em;
     border-radius: .5em;
     text-decoration: none;
-
+    background-color: var(--light);
     color: var(--dark);
     border: solid .1em var(--primary);
     
@@ -920,17 +926,10 @@ button {
     gap: .6em;
     list-style-type: none;
     padding: 0;
-    justify-content: space-between;
 }
 
 
 .likedCard {
-    width: 10.5em; 
-    justify-content: center;
-}
-
-
-.likedList {
     display: flex;
     flex-direction: column;
     width: 10.5em;
@@ -939,7 +938,6 @@ button {
     border-radius: .5em;
     box-sizing: border-box;
     box-shadow: .1em .1em .5em var(--grey);
-
 }
 
 .likedCard img {
@@ -1193,4 +1191,70 @@ button {
     #playlists img:nth-of-type(2) {
         width: 1.6em;
     }
+}
+
+
+@media (prefers-color-scheme: dark) {
+
+    :root {
+        --dark: #FAFAFC;
+        --light: #292929;
+    }
+
+
+    /* nav */
+    .navigatieButton {
+        background-color: var(--secondary);
+    }
+
+    .navigatieContent {
+        background-color: var(--secondary);
+    }
+
+
+    /* zoek */
+    .searchBar {
+        border: var(--primary) solid 0.1em;
+    }
+
+    .searchButton {
+        background-color: var(--primary);
+        border: var(--primary);
+    }
+
+    .searchIcon {
+        filter: invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(250%) contrast(103%);
+    }
+
+    .backArrow {
+        filter: invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(250%) contrast(103%);
+    }
+
+    .swipeButton {
+        color: var(--light);
+    }
+
+    .swipeButton:hover {
+        color: var(--dark);
+    }
+
+
+    /* profiel */
+
+    #user a {
+        color: var(--light);
+    }
+
+    #user a:hover {
+        color: var(--dark);
+    }
+
+    .blackversion {
+        filter: invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(250%) contrast(103%);
+    }
+
+    #statsGenre p {
+        color: var(--light);
+    }
+
 }
