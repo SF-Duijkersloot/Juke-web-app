@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <header id="searchHeader">
+    <header>
         <%- include('../partials/nav', { user: user }) %>
 
     </header>
@@ -19,46 +19,23 @@
     <main>
         <h1>Zoek</h1>
         <!-- Zoekformulier -->
-        <form action="/search" method="get">
+        <form action="/search" method="get" class="searchContainer">
             <input type="text" name="q" class="searchBar" placeholder="Zoeken...">
-            <button type="submit">Search</button>
+            <button type="submit" class="searchButton"><img src="images/zoeken.svg" alt="Zoekknop"></button>
         </form>
-        <section class="searchList">
-            <h2>Top genres</h2>
-            <p>Swipe en ontdek op basis van een specifieke genre</p>
-            <ul>
-                <% genres.slice(0, 5).forEach(genre => { %>
-                    <li>
-                        <div>
-                            <img src="<%= genre.image %>" alt="<%= genre.name %>">
-                            <p><%= genre.name %></p>
-                        </div>
-                        <form action="/search-recommendations" method="get">
-                            <input type="hidden" name="seedUri" value="<%= genre.name %>">
-                            <input type="hidden" name="seed_type" value="genre">
-                            <input type="submit" value="Swipe" class="swipeButton">
-                        </form>
-                    </li>
-                <% }) %>
-            </ul>
-            <a href="/genres" class="moreLink">Meer weergeven</a>
-        </section>
         <section class="searchList">
             <h2>Jouw topartiesten</h2>
             <p>Swipe en ontdek op basis van een specifieke artiest</p>
             <ul>
                 <% artists.forEach(artist => { %>
-                    <li>
-                        <div>
-                            <img src="<%= artist.images[0].url %>" alt="<%= artist.name %>">
-                            <p><%= artist.name %></p>
-                        </div>
-                        <form action="/search-recommendations" method="get">
-                            <input type="hidden" name="seedUri" value="<%= artist.id %>">
-                            <input type="hidden" name="seed_type" value="artist">
-                            <input type="submit" value="Swipe" class="swipeButton">
-                        </form>
-                    </li>
+                <li>
+                    <div>
+                        <img src="<%= artist.images[0].url %>" alt="<%= artist.name %>">
+                        <p class="textOverflow"><%= artist.name %></p>
+                    </div>
+                    <a href="/search-recommendations?seedUri=<%= artist.id %>&seed_type=seed_artists"
+                        class="swipeButton">Swipe</a>
+                </li>
                 <% }) %>
             </ul>
         </section>
@@ -67,20 +44,19 @@
             <p>Swipe en ontdek op basis van een specifiek nummer</p>
             <ul>
                 <% topTracks.forEach(track => { %>
-                    <li>
-                        <div>
-                            <img src="<%= track.album.images[0].url %>" alt="<%= track.name %>">
-                            <p><%= track.name %> - <%= track.artists.map(artist => artist.name).join(', ') %></p>
-                        </div>
-                        <form>
-                            <input type="hidden" name="track" value="<%= track.id %>">
-                            <input type="submit" value="Swipe" class="swipeButton">
-                        </form>
-                    </li>
+                <li>
+                    <div>
+                        <img src="<%= track.album.images[0].url %>" alt="<%= track.name %>">
+                        <p class="textOverflow"><%= track.name %> -
+                            <%= track.artists.map(artist => artist.name).join(', ') %></p>
+                    </div>
+                    <a href="/search-recommendations?seedUri=<%= track.id %>&seed_type=seed_tracks"
+                        class="swipeButton">Swipe</a>
+                </li>
                 <% }) %>
             </ul>
         </section>
-        
+
     </main>
 
     <script defer src="scripts/app.js"></script>

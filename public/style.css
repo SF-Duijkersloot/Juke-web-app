@@ -63,30 +63,43 @@ p {
     margin-bottom: 1em;
 }
 
-header {
-    padding-bottom: 1.25em;
-}
-
 button {
     font-family: 'Poppins', sans-serif;
 }
 
 /* Zoek-pagina */
 
-#searchHeader {
-    border-bottom: solid 0.1em var(--dark)
+.searchContainer {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 0.5em 0 1.5em 0;
 }
 
 .searchBar {
-    width: 90%;
-    padding: 10px;
-    margin-top: 20px;
+    flex-grow: 1;
+    padding: 0.7em;
     font-size: 1em;
+    border: var(--dark) solid 0.1em;
 }
 
-/* .searchButton {
+.searchButton {
+    padding: 0;
+    height: 3.32em;
+    width: 3.32em;
+    background-color: var(--dark);
+    border: var(--dark) solid 0.1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-} */
+.searchButton img {
+    width: 80%;
+    height: 80%;
+    object-fit: cover; /* Ensure the image covers the button */
+}
 
 .searchList {
     position: relative;
@@ -104,24 +117,32 @@ button {
 .searchList li {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     width: 100%;
 }
 
 .searchList li>div {
     display: flex;
     align-items: center;
-    width: 100%;
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 .searchList img {
     width: 3.5em;
     height: 3.5em;
+    min-width: 3.5em;
     border-radius: 50%;
     margin-right: 1.5em;
+
 }
 
-.searchList p {
+.textOverflow {
     margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    text-overflow: ellipsis;
 }
 
 .swipeButton {
@@ -131,8 +152,8 @@ button {
     background-color: var(--primary);
     border: none;
     border-radius: 0.5em;
-    padding: 0.6em 0.9em;
-    margin-left: auto;
+    padding: 0.5em 0.8em;
+    margin-left: 0.5em; 
     cursor: pointer;
     text-decoration: none;
 }
@@ -147,9 +168,9 @@ button {
     float: right;
 }
 
-/* genre-pagina */
+/* search-result-pagina */
 
-#genreHeaderDiv {
+.backHeader {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -161,12 +182,11 @@ button {
 }
 
 .backArrow {
-    position: absolute;
-    left: 0;
     width: 1.4em;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 1em;
 }
 
 .backArrow img {
@@ -174,8 +194,6 @@ button {
     width: 1.4em;
     height: auto;
 }
-
-/* search-result-pagina */
 
 .searchResultList ul {
     list-style-type: none;
@@ -188,25 +206,30 @@ button {
 .searchResultList li {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     width: 100%;
-    margin-bottom: 1em;
 }
 
 .searchResultList img {
     width: 3.5em;
     height: 3.5em;
+    min-width: 3.5em;
     border-radius: 50%;
     margin-right: 1.5em;
 }
 
 .searchResultList li>div {
     width: 100%;
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 .nummerDiv {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 .nummerDiv p {
@@ -222,14 +245,8 @@ button {
 
 #user {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 1em;
-}
-
-#user div {
-    display: flex;
-    justify-items: center;
     align-items: center;
+    margin:0.5em 0 1.5em 0;
 }
 
 #user img {
@@ -239,7 +256,7 @@ button {
     margin-right: 1.5em;
 }
 
-#user button {
+#user a {
     display: flex;
     align-self: center;
     font-size: 0.8em;
@@ -250,16 +267,17 @@ button {
     border-radius: 0.5em;
     padding: 0.6em 0.9em;
     cursor: pointer;
-    margin-left: auto;
+    margin-left: auto; 
+    text-decoration: none;
 }
 
-#user button:hover {
+#user a:hover {
     scale: 1.1;
     background-color: var(--light);
     border: .15em solid var(--primary);
 }
 
-#user button:active {
+#user a:active {
     /* scale: 1.1; */
     background-color: var(--light);
     border: .15em solid var(--accent);
@@ -894,20 +912,27 @@ button {
 
 
 /* ------------------likedpagina----------------- */
-/* #liked {
-    padding: 1em;
-} */
 
-#liked h2 {
-    text-align: start;
-    margin: 0 0 1em .4em;
-
+.search {
+    margin-top: 0.8em;
+    width: 100%;
+    padding: 0.7em;
+    font-size: 1em;
+    border: var(--dark) solid 0.1em;
 }
 
-#likedClass {
+.list {
     display: flex;
     flex-wrap: wrap;
     gap: .6em;
+    list-style-type: none;
+    padding: 0;
+    justify-content: space-between;
+}
+
+
+.likedCard {
+    width: 10.5em; 
     justify-content: center;
 }
 
@@ -924,23 +949,22 @@ button {
 
 }
 
-.likedList img {
+.likedCard img {
     width: 100%;
     object-fit: cover;
     vertical-align: top;
     border-radius: 0.5em 0.5em 0 0;
 }
 
-.likedList h4,
-.likedList p {
-    padding: 0 .5em;
+.likedCard h4, .likedCard p  {
+   padding: 0 .5em;
+   margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    text-overflow: ellipsis;
+    width: auto;
 }
-
-.likedList h4 {
-    margin-top: .3em;
-}
-
-
 
 
 /* -----------------media query-------------- */
