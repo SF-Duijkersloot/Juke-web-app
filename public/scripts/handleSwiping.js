@@ -47,7 +47,7 @@ function handleSwipe(card, liked) {
 // Houdt huidige positie bij
 function onMove(clientX, startX, card) {
     const offsetX = clientX - startX
-    console.log(offsetX)
+    // console.log(offsetX)
     const rotation = offsetX / 20
     card.style.transform = `translateX(${offsetX}px) rotate(${rotation}deg)`
     
@@ -282,9 +282,10 @@ const handleCardEvent = async (cardElement, action, e) => {
     const form = cardElement.querySelector('form')
     const trackId = form.querySelector('input[name="track_id"]').value
     const trackName = form.querySelector('input[name="track_name"]').value
-    const isSearch = form.querySelector('input[name="isSearch"]')?.value || null
     const trackArtists = JSON.parse(form.querySelector('input[name="track_artists"]').value)
     const trackImages = JSON.parse(form.querySelector('input[name="track_images"]').value)
+    const isSearch = form.querySelector('input[name="isSearch"]')?.value || null
+    
     const card = cardElement.querySelector('.article')
 
     // Animatie voor like/dislike uit het scherm
@@ -310,17 +311,31 @@ const handleCardEvent = async (cardElement, action, e) => {
 
     // Als de response ok is, haal een nieuwe recommendation op
     if (res.ok) {
+        // Haal seed_uri en seed_type op uit de url
+        const urlParams = new URLSearchParams(window.location.search);
+        const seed_uri = urlParams.get('seed_uri');
+        const seed_type = urlParams.get('seed_type');
+
         // Haal nieuwe recommendation op
-        const newRecommendation = await fetchNewRecommendation(isSearch, trackId, 'seed_tracks');
-        const newCard = createCardElement(newRecommendation);
-        // Voeg nieuwe card toe aan de container
+        const newRecommendation = await fetchNewRecommendation(isSearch, seed_type, seed_uri);
+        const newCard = createCardElement(newRecommendation, isSearch);
+
+        // Voeg nieuwe card toe aan de pagina
         cardsContainer.appendChild(newCard);
     }
 }
 
-// Haal nieuwe recommendation op
-async function fetchNewRecommendation(isSearch, seedUri, seedType) {
-    const res = await fetch(`/new-recommendation?seedUri=${seedUri}&seed_type=${seedType}&isSearch=${isSearch}`);
+// Haal nieuwe recommendation op (op basis van zoekopdracht)
+async function fetchNewRecommendation(isSearch, seed_type, seed_uri) {
+    // Standard url
+    let url = '/new-recommendation';
+    
+    // Als search recommendation, verander url
+    if (isSearch) {
+        url = `/new-search-recommendation?seed_type=${seed_type}&seed_uri=${seed_uri}`;
+    }
+
+    const res = await fetch(url);
     if (res.ok) {
         const data = await res.json();
         return data.recommendation;
@@ -330,7 +345,7 @@ async function fetchNewRecommendation(isSearch, seedUri, seedType) {
 
 
 
-function createCardElement(track) {
+function createCardElement(track, isSearch = false) {
     const card = document.createElement('div')
     card.classList.add('card')
 
@@ -357,6 +372,7 @@ function createCardElement(track) {
                 <input type="hidden" name="track_name" value="${trackName}" class="input" />
                 <input type="hidden" name="track_artists" value='${JSON.stringify(artistNames)}' class="input" />
                 <input type="hidden" name="track_images" value='${JSON.stringify(track.album.images)}' class="input" />
+                ${isSearch ? '<input type="hidden" name="isSearch" value="true" class="input" />' : ''}
                 <button type="submit" name="action" value="dislike" class="dislike-button">
                     <img src="images/dislike.svg" alt="dislike icon">
                 </button>
@@ -374,7 +390,7 @@ function createCardElement(track) {
     `
 
     const innerCard = card.querySelector('.article')
-    
+
     // Event listeners toevoegen aan de nieuwe card
     attachEventListeners(innerCard)
 

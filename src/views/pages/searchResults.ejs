@@ -32,7 +32,13 @@
                         <p><%= track.name %></p>
                         <p><%= track.artists.map(artist => artist.name).join(', ') %></p>
                     </div>
-                    <a href="/search-recommendations?seedUri=<%= track.id %>&seed_type=seed_tracks" class="recommendation-button">Get Recommendations</a>
+
+                    <form action="/search-recommendations" method="get">
+                        <input type="hidden" name="seed_uri" value="<%= track.id %>">
+                        <input type="hidden" name="seed_type" value="seed_tracks">
+                        <input type="hidden" name="seed_name" value="<%= track.name %>">
+                        <input type="submit" value="Swipe" class="swipeButton">
+                    </form>                    
                 </li>
                 <% }); %>
             </ul>
@@ -47,7 +53,13 @@
                     <div>
                         <p><%= artist.name %></p>
                     </div>
-                    <a href="/search-recommendations?seedUri=<%= artist.id %>&seed_type=seed_artists" class="recommendation-button">Get Recommendations</a>
+                    <!-- <a href="/search-recommendations?seed_uri=<%= artist.id %>&seed_type=seed_artists" class="recommendation-button">Get Recommendations</a> -->
+                    <form action="/search-recommendations" method="get">
+                        <input type="hidden" name="seed_uri" value="<%= artist.id %>">
+                        <input type="hidden" name="seed_type" value="seed_artists">
+                        <input type="hidden" name="seed_name" value="<%= artist.name %>">
+                        <input type="submit" value="Swipe" class="swipeButton">
+                    </form>   
                 </li>
                 <% }); %>
             </ul>

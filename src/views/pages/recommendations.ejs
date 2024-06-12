@@ -71,8 +71,8 @@
 
     <main id="main">
         <section class="verkennen">
-            <h1>Recommendations based on search</h1>
-            <p>Juke. algoritme</p>
+            <h1>Verkennen</h1>
+            <p>Gebaseert op <b><%= seed_name %></b></p>
         </section>
         <div class="cards-container">
             <% if (tracks && tracks.length > 0) { %>
@@ -91,9 +91,9 @@
                             <form>
                                 <input type="hidden" name="track_id" value="<%= track.id %>" class="input" />
                                 <input type="hidden" name="track_name" value="<%= track.name %>" class="input" />
-                                <input type="hidden" name="isSearch" value="true" class="input" /> <!-- Dit is waar we de isSearch-parameter instellen -->
                                 <input type="hidden" name="track_artists" value="<%= JSON.stringify(track.artists.map(artist => artist.name)) %>" class="input" />
                                 <input type="hidden" name="track_images" value="<%= JSON.stringify(track.album.images) %>" class="input" />
+                                <input type="hidden" name="isSearch" value="true" class="input" />
                                 <button type="submit" name="action" value="dislike" class="dislike-button">
                                     <img src="images/dislike.svg" alt="dislike icon">
                                 </button>
@@ -111,7 +111,7 @@
                     </div>
                 <% }) %>                    
             <% } else { %>
-                <p>Geen recommendations gevonden.</p>
+                <p>Geen nummers gevonden</p>
             <% } %>
         </div>
     </main>

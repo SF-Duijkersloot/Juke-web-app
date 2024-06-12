@@ -54,10 +54,11 @@
                             <p><%= artist.name %></p>
                         </div>
                         <form action="/search-recommendations" method="get">
-                            <input type="hidden" name="seedUri" value="<%= artist.id %>">
-                            <input type="hidden" name="seed_type" value="artist">
+                            <input type="hidden" name="seed_uri" value="<%= artist.id %>">
+                            <input type="hidden" name="seed_type" value="seed_artists">
+                            <input type="hidden" name="seed_name" value="<%= artist.name %>">
                             <input type="submit" value="Swipe" class="swipeButton">
-                        </form>
+                        </form>     
                     </li>
                 <% }) %>
             </ul>
@@ -72,10 +73,12 @@
                             <img src="<%= track.album.images[0].url %>" alt="<%= track.name %>">
                             <p><%= track.name %> - <%= track.artists.map(artist => artist.name).join(', ') %></p>
                         </div>
-                        <form>
-                            <input type="hidden" name="track" value="<%= track.id %>">
+                        <form action="/search-recommendations" method="get">
+                            <input type="hidden" name="seed_uri" value="<%= track.id %>">
+                            <input type="hidden" name="seed_type" value="seed_tracks">
+                            <input type="hidden" name="seed_name" value="<%= track.name %>">
                             <input type="submit" value="Swipe" class="swipeButton">
-                        </form>
+                        </form>     
                     </li>
                 <% }) %>
             </ul>
