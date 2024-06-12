@@ -31,7 +31,7 @@ app
     .use(session({ 
         secret: process.env.SESSION_SECRET,
         resave: false,
-        saveUninitialized: true
+        saveUninitialized: true,
     }))
 
 
@@ -43,7 +43,7 @@ app
                 MongoDB Setup
 
 ===========================================*/
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
+const { MongoClient, ServerApiVersion } = require('mongodb')
 const { create } = require('domain')
 // Construct URL used to connect to database from info in the .env file
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`
@@ -379,18 +379,38 @@ async function getUserProfile(req) {
 
 
 
+
 /*==========================================\
 
                 Get top tracks
 
 ===========================================*/
-async function getTopTracks(req) 
-{
-    return (await fetchWebApi(
+async function getTopTracks(req) {
+    const cacheTimeTillExpiration = 60 * 60 * 1000; // 1 hour in milliseconds
+
+    // Check if top tracks are in the session and not expired
+    if (req.session.topTracks && new Date() < new Date(req.session.topTracksExpiry)) {
+        // console.log('Using cached top tracks');
+        // console.log('Top tracks expiry:', req.session.topTracksExpiry);
+        return req.session.topTracks;
+    }
+
+    // Fetch top tracks from Spotify API
+    const topTracks = (await fetchWebApi(
         req,
         'v1/me/top/tracks?time_range=short_term&limit=5', 'GET'
-    )).items
+    )).items;
+
+    // Store top tracks and expiry time in session
+    req.session.topTracks = topTracks;
+    req.session.topTracksExpiry = new Date(new Date().getTime() + cacheTimeTillExpiration);
+
+    // console.log('Fetched new top tracks');
+    // console.log('Top tracks expiry:', req.session.topTracksExpiry);
+    return topTracks;
 }
+
+
 
 
 
