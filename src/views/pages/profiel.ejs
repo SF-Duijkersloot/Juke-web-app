@@ -12,21 +12,16 @@
 <body>
     <header>
         <%- include('../partials/nav', { user: user }) %>
-            <h1>Profiel</h1>
+
     </header>
 
     <main>
+        <h1>Profiel</h1>
         <section id="user">
-            <img src="images/pop.jpg">
+            <img src="<%= image %>">
             <!-- Juke logo als pfp gebruiken? -->
-
-            <div>
-                <h3>
-                    <%= user.display_name %>
-                </h3>
-                <!-- <p>Bio? gaan we dit houden?</p> -->
-            </div>
-            <button>settings</button>
+            <h3><%= user.display_name %></h3>
+            <a href="/logout">Uitloggen</a>
         </section>
 
         <section id="playlists">
@@ -52,24 +47,20 @@
             <h2>Statistieken</h2>
             <div id="statsLijst">
                 <div>
-                    <h4>
-                        <%= stats.totalSwipes %>
-                    </h4>
+                    <h4><span class="counter" data-target="<%= stats.totalSwipes %>">0</span></h4>
                     <p>swipes</p>
                 </div>
                 <div>
-                    <h4>
-                        <%= stats.likes %>
-                    </h4>
+                    <h4><span class="counter" data-target="<%= stats.likes %>">0</span></h4>
                     <p>geliket</p>
                 </div>
                 <div>
-                    <h4>
-                        <%= stats.dislikes %>
-                    </h4>
+                    <h4><span class="counter" data-target="<%= stats.dislikes %>">0</span></h4>
+
                     <p>gedisliket</p>
                 </div>
             </div>
+            
             <h3>Jouw top genres</h3>
             <div id="statsGenre">
                 <% genres.forEach(genre=> { %>
@@ -105,6 +96,7 @@
         </section>
     </main>
     <script defer src="scripts/app.js"></script>
+
 </body>
 
 </html>
