@@ -422,28 +422,53 @@ async function getTopTracks(req) {
 
 ===========================================*/
 
+// Helper function to fetch and cache initial batch of recommendations
+async function fetchInitialBatch(req, seed_type, seed_uri) {
+    const INITIAL_BATCH_SIZE = 30; // Increased batch size for buffer
+    const MIN_APPROVED = 10;
+    let approvedRecommendations = [];
+
+    // Fetch initial batch
+    const initialRecommendations = await getRecommendations(req, INITIAL_BATCH_SIZE, seed_type, seed_uri);
+
+    // Filter initial batch to ensure at least MIN_APPROVED are approved
+    approvedRecommendations = await filterRecommendations(req, initialRecommendations);
+
+    // If less than MIN_APPROVED are approved, fetch more until we have enough
+    while (approvedRecommendations.length < MIN_APPROVED) {
+        console.log(`Current approved recommendations count: ${approvedRecommendations.length}`);
+        const remainingLimit = MIN_APPROVED - approvedRecommendations.length;
+        const additionalRecommendations = await getRecommendations(req, remainingLimit, seed_type, seed_uri);
+        approvedRecommendations = approvedRecommendations.concat(additionalRecommendations);
+
+        // Break early if we've fetched enough
+        if (approvedRecommendations.length >= MIN_APPROVED) {
+            break;
+        }
+    }
+
+    // Cache the approved recommendations in session
+    req.session.recommendations = approvedRecommendations;
+    req.session.recommendationsExpiry = new Date(new Date().getTime() + 60 * 60 * 1000); // 1 hour TTL
+
+    console.log('Initial batch fetched and cached:', req.session.recommendations.length, 'approved recommendations');
+}
+
+
 async function getRecommendations(req, limit, seed_type, seed_uri) {
     try {
-        let approvedRecommendations = []
-        let remainingLimit = limit
-        
-        while (remainingLimit > 0) {
-                const recommendations = (
-                    await fetchWebApi(
-                        req,
-                        `v1/recommendations?limit=${remainingLimit}&${seed_type}=${seed_uri.join(',')}`,
-                        'GET'
-                    )
-                ).tracks
+        const recommendations = (
+            await fetchWebApi(
+                req,
+                `v1/recommendations?limit=${limit}&${seed_type}=${seed_uri.join(',')}`,
+                'GET'
+            )
+        ).tracks;
 
-            const filteredRecommendations = await filterRecommendations(req, recommendations)
-            approvedRecommendations.push(...filteredRecommendations)
-            remainingLimit = limit - approvedRecommendations.length
-        }
-
-        return approvedRecommendations.slice(0, limit)
+        return recommendations;
     } catch (error) {
-        console.error('Error getting recommendations:', error)
+        console.error('Error getting recommendations:', error);
+        return [];
     }
 }
 
@@ -452,8 +477,8 @@ async function filterRecommendations(req, recommendations) {
         const filteredRecommendations = await Promise.all(
             recommendations.map(async (track) => {
                 if (!hasPreviewUrl(track)) {
-                    console.log(`Track "${track.name}" doesn't have a preview_url`)
-                    return null
+                    console.log(`Track "${track.name}" doesn't have a preview_url`);
+                    return null;
                 }
 
                 const userRecommendations = await usersCollection.findOne(
@@ -462,64 +487,101 @@ async function filterRecommendations(req, recommendations) {
                         'recommendations._id': track.id
                     },
                     { projection: { _id: 1 } }
-                )
+                );
 
                 if (userRecommendations) {
-                    console.log(`Track "${track.name}" already registered.`)
-                    return null
+                    console.log(`Track "${track.name}" already registered.`);
+                    return null;
                 }
 
-                return track
+                return track;
             })
-        )
+        );
 
-        return filteredRecommendations.filter(Boolean)
+        return filteredRecommendations.filter(Boolean);
     } catch (error) {
-        console.error('Error filtering recommendations:', error)
+        console.error('Error filtering recommendations:', error);
+        return [];
     }
 }
 
-function hasPreviewUrl(track) {
-    return track.preview_url !== null && track.preview_url !== ''
+// Helper function to check if session cache is expired
+function isSessionCacheExpired(req) {
+    return !req.session.recommendationsExpiry || new Date() > req.session.recommendationsExpiry;
 }
 
-
-
-
-/*==========================================\
-
-           Regular recommendations
-
-===========================================*/
 app.get('/recommendations', async (req, res) => {
     try {
-        const limit = 2
-        const seed_type = 'seed_tracks'
-        const topTracks = await getTopTracks(req)
-        const seed_uri = topTracks.map((track) => track.id)
+        const limit = 2;
+        const seed_type = 'seed_tracks';
+        const topTracks = await getTopTracks(req);
+        const seed_uri = topTracks.map((track) => track.id);
 
-        const recommendedTracks = await getRecommendations(req, limit, seed_type, seed_uri)
-        res.render('pages/verkennen', { tracks: recommendedTracks, user: req.session.user })
+        if (isSessionCacheExpired(req) || req.session.recommendations.length < limit) {
+            console.log('Fetching initial batch of recommendations...');
+            await fetchInitialBatch(req, seed_type, seed_uri);
+        }
+
+        const recommendationsToServe = req.session.recommendations.slice(0, limit);
+
+        // Remove served recommendations from the session cache
+        req.session.recommendations = req.session.recommendations.slice(limit);
+
+        console.log('Serving recommendations:', recommendationsToServe.map(track => track.name));
+
+        res.render('pages/verkennen', { tracks: recommendationsToServe, user: req.session.user });
+
+        // Replenish cache if needed (with a larger buffer)
+        if (req.session.recommendations.length < 10) { // Adjust this threshold as needed
+            console.log('Replenishing recommendation cache...');
+            await fetchInitialBatch(req, seed_type, seed_uri);
+        }
     } catch (error) {
-        console.error('Error fetching recommendations:', error)
-        res.status(500).json({ error: 'An error occurred while fetching recommendations.' })
+        console.error('Error fetching recommendations:', error);
+        res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
     }
-})
+});
 
 app.get('/new-recommendation', async (req, res) => {
     try {
-        const limit = 2
-        const seed_type = 'seed_tracks'
-        const topTracks = await getTopTracks(req)
-        const seed_uri = topTracks.map((track) => track.id)
+        const limit = 1; // Only need one recommendation for this route
+        const seed_type = 'seed_tracks';
+        const topTracks = await getTopTracks(req);
+        const seed_uri = topTracks.map((track) => track.id);
 
-        const recommendedTracks = await getRecommendations(req, limit, seed_type, seed_uri)
-        res.json({ recommendation: recommendedTracks[0] })
+        if (isSessionCacheExpired(req) || req.session.recommendations.length < limit) {
+            console.log('Fetching new recommendation...');
+            await fetchInitialBatch(req, seed_type, seed_uri);
+        }
+
+        const recommendationToServe = req.session.recommendations[0];
+
+        // Remove served recommendation from the session cache
+        req.session.recommendations = req.session.recommendations.slice(1);
+
+        console.log('Serving new recommendation:', recommendationToServe.name);
+
+        res.json({ recommendation: recommendationToServe });
+
+        // Replenish cache if needed, but only when the buffer is significantly low
+        if (req.session.recommendations.length < 5) { // Adjust this threshold as needed
+            console.log('Replenishing recommendation cache...');
+            await fetchInitialBatch(req, seed_type, seed_uri);
+        }
     } catch (error) {
-        console.error('Error fetching new recommendation:', error)
-        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' })
+        console.error('Error fetching new recommendation:', error);
+        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' });
     }
-})
+});
+
+function hasPreviewUrl(track) {
+    return track.preview_url !== null && track.preview_url !== '';
+}
+
+// Helper function to check if session cache is expired
+function isSessionCacheExpired(req) {
+    return !req.session.recommendationsExpiry || new Date() > req.session.recommendationsExpiry;
+}
 
 
 
@@ -699,7 +761,7 @@ async function handleSongAction(req, res) {
                 $inc: action === 'like' ? { 'swipes.likes': 1 } : { 'swipes.dislikes': 1 },
             }
         )
-        console.log(`Song added with id: ${track_id}`)
+        // console.log(`Song added with id: ${track_id}`)
 
         // Add song to playlist if it's liked
         if (action === 'like') {
@@ -728,7 +790,7 @@ async function addSongToPlaylist(req) {
             { uris: [`spotify:track:${track_id}`] }
         )
 
-        console.log('Song added to playlist', response)
+        // console.log('Song added to playlist', response)
     } catch (error) {
         console.error('Error adding song to playlist:', error)
     }
@@ -760,9 +822,9 @@ async function registerSongCollection(req) {
             }
 
             await songsCollection.insertOne(trackInfo)
-            console.log('Song added to songs collection')
+            // console.log('Song added to songs collection')
         } else {
-            console.log('Song already exists in the songs collection')
+            // console.log('Song already exists in the songs collection')
 
             // Update swipes based on the action
             if (action === 'like' && !track.likes.includes(userId)) {
