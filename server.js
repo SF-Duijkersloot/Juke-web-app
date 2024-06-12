@@ -286,9 +286,12 @@ app.get('/profiel', async (req, res) => {
         const user = await usersCollection.findOne({ _id: req.session.user.id })
         const recommendations = user.recommendations.reverse()
 
-        const totalSwipes = user.recommendations.length;
-        const likes = user.recommendations.filter(track => track.action === 'like').length;
-        const dislikes = user.recommendations.filter(track => track.action === 'dislike').length;
+        // const totalSwipes = user.recommendations.length;
+        // const likes = user.recommendations.filter(track => track.action === 'like').length;
+        // const dislikes = user.recommendations.filter(track => track.action === 'dislike').length;
+        const totalSwipes = user.swipes.likes + user.swipes.dislikes;
+        const likes = user.swipes.likes;
+        const dislikes = user.swipes.dislikes;
 
         res.render('pages/profiel', { 
             user: req.session.user,

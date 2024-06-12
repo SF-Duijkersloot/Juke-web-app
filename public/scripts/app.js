@@ -1,6 +1,10 @@
 window.addEventListener('DOMContentLoaded', () => {
-    const heart = document.getElementById('heart');
+    const allHearts = document.querySelectorAll('#heart');
     
+    allHearts.forEach(heart => {
+      heart.addEventListener('click', likeUnlikePost);
+    })
+
     const likeUnlikePost = () => {
       if(heart.classList.contains('like')) {
         heart.classList.add('unlike'); 
@@ -12,5 +16,5 @@ window.addEventListener('DOMContentLoaded', () => {
         
       }
     }
-    heart.addEventListener('click', likeUnlikePost);
+    
 }); 
