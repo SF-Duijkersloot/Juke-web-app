@@ -12,53 +12,47 @@
 <body>
     <header>
         <%- include('../partials/nav', { user: user }) %>
-        <div id="genreHeaderDiv">
-            <a href="/profiel" class="backArrow"><img src="/images/arrowBlack.svg"></a>
-            <h1>Jouw gedisliket</h1>
-        </div>
+
     </header>
+
     <main>
-        <div id="liked">
-            <div id="likedClass">
-                <div class="likedList">
-                    <img src="images/Harry.jpeg" alt="harry">
-                    <h4>Title</h3>
-                        <p>artiest</p>
-                </div>
-                <div class="likedList">
-                    <img src="images/Harry.jpeg" alt="harry">
-                    <h4>Title</h3>
-                        <p>artiest</p>
-                </div>
-                <div class="likedList">
-                    <img src="images/Harry.jpeg" alt="harry">
-                    <h4>Title</h3>
-                        <p>artiest</p>
-                </div>
-                <div class="likedList">
-                    <img src="images/Harry.jpeg" alt="harry">
-                    <h4>Title</h3>
-                        <p>artiest</p>
-                </div>
-                <div class="likedList">
-                    <img src="images/Harry.jpeg" alt="harry">
-                    <h4>Title</h3>
-                        <p>artiest</p>
-                </div>
-                <div class="likedList">
-                    <img src="images/Harry.jpeg" alt="harry">
-                    <h4>Title</h3>
-                        <p>artiest</p>
-                </div>
-                <div class="likedList">
-                    <img src="images/Harry.jpeg" alt="harry">
-                    <h4>Title</h3>
-                        <p>artiest</p>
-                </div>
-            </div>
-        </section>
+        <div class="backHeader">
+            <a href="/profiel" class="backArrow"><img src="/images/Arrow.svg"></a>
+            <h1>Disliked</h1>
+        </div>
+
+            <section id="theList">
+
+                <input type="search" class="search" placeholder="Zoeken...">
+
+                <ul class="list">
+                    <li class="likedCard">
+                        <img src="images/Harry.jpeg" alt="harry">
+                        <h4 class="listNummer">Adore You</h4>
+                        <p class="listArtiest">Harry Styles</p>
+                    </li>
+                    <li class="likedCard">
+                        <img src="images/Harry.jpeg" alt="harry">
+                        <h4 class="listNummer">Europapa</h4>
+                        <p class="listArtiest">Joost Klein</p>
+                    </li>
+                    <li class="likedCard">
+                        <img src="images/Harry.jpeg" alt="harry">
+                        <h4 class="listNummer">Take U</h4>
+                        <p class="listArtiest">Jengi</p>
+                    </li>
+                    <li class="likedCard">
+                        <img src="images/Harry.jpeg" alt="harry">
+                        <h4 class="listNummer">Dani California</h4>
+                        <p class="listArtiest">Red Hot Chili Peppers</p>
+                    </li>
+                </ul>
+
+            </section>
     </main>
-    <script defer src="scripts/handleSwiping.js"></script>
+
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+    <script defer src="scripts/likedList.js"></script>
 </body>
 
 </html>

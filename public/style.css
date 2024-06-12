@@ -169,7 +169,7 @@ button {
 
 /* search-result-pagina */
 
-.zoekResultaat {
+.backHeader {
     display: flex;
     align-items: center;
 }
@@ -815,25 +815,26 @@ button {
 
 
 /* ------------------likedpagina----------------- */
-/* #liked {
-    padding: 1em;
-} */
 
-#liked h2 {
-    text-align: start;
-    margin: 0 0 1em .4em;
-
+.search {
+    margin-top: 0.8em;
+    width: 100%;
+    padding: 0.7em;
+    font-size: 1em;
+    border: var(--dark) solid 0.1em;
 }
 
-#likedClass {
+.list {
     display: flex;
     flex-wrap: wrap;
     gap: .6em;
-   justify-content: center;
+    list-style-type: none;
+    padding: 0;
+    justify-content: space-between;
 }
 
 
-.likedList {
+.likedCard {
     width: 10.5em; 
     height: 16em;
     text-align: start;
@@ -843,19 +844,21 @@ button {
 
 }
 
-.likedList img {
+.likedCard img {
     width: 100%;
     object-fit: cover;
     vertical-align: top;
     border-radius: 0.5em 0.5em 0 0;
 }
 
-.likedList h4, .likedList p  {
+.likedCard h4, .likedCard p  {
    padding: 0 .5em;
-}
-
-.likedList h4{
-    margin-top: .3em;
+   margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    text-overflow: ellipsis;
+    width: auto;
 }
 
 
