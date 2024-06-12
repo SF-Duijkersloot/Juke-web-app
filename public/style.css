@@ -88,10 +88,6 @@ button {
     z-index: 300;
 }
 
-.dropdown > img {
-  display: none;
-}
-
 .navigatieButton {
     display: flex;
     justify-content: center;
@@ -167,7 +163,6 @@ button {
     display: none;
 }
 
-
 /* -------------------open--------------------------- */
 
 .navigatieButton.open span:nth-of-type(1) {
@@ -204,7 +199,6 @@ button {
 }
 
 /* ----------------connectpage-------------- */
-
 
 .aanmelden {
     display: flex;
@@ -976,15 +970,7 @@ button {
         padding: 1em 2em;
         background-color: var(--dark);
         border-radius: 0;
-        /* z-index: 200; */
-    }
-
-    .dropdown > img{
-        display: contents;
-        height: 4em;
-        z-index: 2;
-        bottom: 1em;
-        left: 1em;
+        z-index: 200;
     }
 
     .navigatieButton {
