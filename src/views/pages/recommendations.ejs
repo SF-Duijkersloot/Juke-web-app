@@ -79,7 +79,7 @@
                 <% tracks.forEach(track => { %>
                     <div class="card">
                         <article class="article">
-                            <header style="background-image: url(<%= track.album.images[0].url %>)"></header>
+                            <header style="background-image: url(<%= track.album.images[0]?.url %>)"></header>
                             <section>
                                 <div>
                                     <h3><%= track.name %></h3>
