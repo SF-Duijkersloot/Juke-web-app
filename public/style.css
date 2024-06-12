@@ -9,7 +9,7 @@
     --light: #FAFAFC;
     --grey: #8b8b8b;
     --magenta: #b22e63;
-    --gray: #e2e2e2;
+    --gray: #c4c4c4;
 
     /* Typografie */
     --d1: 3em;
@@ -45,7 +45,6 @@ h1 {
 h2 {
     font-size: var(--h2);
     font-weight: bold;
-    color: #000;
 }
 
 h3 {
@@ -71,6 +70,426 @@ header {
 button {
     font-family: 'Poppins', sans-serif;
 }
+
+/* Zoek-pagina */
+
+#searchHeader {
+    border-bottom: solid 0.1em var(--dark)
+}
+
+.searchBar {
+    width: 90%;
+    padding: .8em;
+    margin-top: 1.2em;
+    font-size: 1em;
+}
+
+/* .searchButton {
+
+} */
+
+.searchList {
+    position: relative;
+    margin-bottom: 3em;
+}
+
+.searchList ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+}
+
+.searchList li {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.searchList li>div {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.searchList img {
+    width: 3.5em;
+    height: 3.5em;
+    border-radius: 50%;
+    margin-right: 1.5em;
+}
+
+.searchList p {
+    margin: 0;
+}
+
+.swipeButton {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--dark);
+    background-color: var(--primary);
+    border: none;
+    border-radius: 0.5em;
+    padding: 0.6em 0.9em;
+    margin-left: auto;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.swipeButton:hover {
+    scale: 1.1;
+    filter: drop-shadow(var(--primary) 0.1em 0.1em 0.9em);
+}
+
+.moreLink {
+    color: var(--primary);
+    float: right;
+}
+
+/* genre-pagina */
+
+#genreHeaderDiv {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+#genreHeaderDiv h1 {
+    text-align: start;
+}
+
+.backArrow {
+    position: absolute;
+    left: 0;
+    width: 1.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.backArrow img {
+    transform: rotate(180deg);
+    width: 1.4em;
+    height: auto;
+}
+
+/* search-result-pagina */
+
+.searchResultList ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+}
+
+.searchResultList li {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+.searchResultList img {
+    width: 3.5em;
+    height: 3.5em;
+    border-radius: 50%;
+    margin-right: 1.5em;
+}
+
+.searchResultList li>div {
+    width: 100%;
+}
+
+.nummerDiv {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.nummerDiv p {
+    margin: 0;
+    font-size: 1em;
+}
+
+.nummerDiv p:last-of-type {
+    font-size: 0.8em;
+}
+
+/* profiel-pagina */
+
+#user {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1em;
+}
+
+#user div {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+}
+
+#user img {
+    width: 5em;
+    height: 5em;
+    border-radius: 50%;
+    margin-right: 1.5em;
+}
+
+#user button {
+    display: flex;
+    align-self: center;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--dark);
+    background-color: var(--primary);
+    border: none;
+    border-radius: 0.5em;
+    padding: 0.6em 0.9em;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+#user button:hover {
+    scale: 1.1;
+    background-color: var(--light);
+    border: .15em solid var(--primary);
+}
+
+#user button:active {
+    background-color: var(--light);
+    border: .15em solid var(--accent);
+}
+
+
+#playlists {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+#playlists a {
+    display: flex;
+    justify-content: space-between;
+
+    width: 95%;
+    height: 3em;
+    padding: .5em 1em;
+    margin-bottom: .7em;
+    border-radius: .5em;
+    text-decoration: none;
+
+    color: var(--dark);
+    border: solid .1em var(--primary);
+    
+}
+
+#playlists a:visited {
+    color: var(--dark);
+}
+
+#playlists div {
+    margin-right: auto;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+#playlists div p {
+    margin-top: -.3em;
+    font-size: .95em;
+}
+
+.likedLink img:nth-of-type(1),
+.dislikedLink img:nth-of-type(1) {
+    width: 2.5em;
+    margin-right: 1em;
+}
+
+
+
+.likedLink img:nth-of-type(2) {
+    margin-left: auto;
+}
+
+.dislikedLink img:nth-of-type(2) {
+    margin-left: auto;
+}
+
+
+
+#playlists a:visited {
+    text-decoration: none;
+    color: var(--dark);
+}
+
+.blackversion {
+    filter: invert(100%) sepia(100%) saturate(10000%) hue-rotate(180deg) brightness(0%) contrast(100%);
+
+}
+
+#stats {
+    margin-bottom: 1em;
+}
+
+#statsLijst {
+    display: flex;
+}
+
+#statsLijst div {
+    margin-right: 1em;
+}
+
+#statsGenre {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+#statsGenre::-webkit-scrollbar {
+    display: none;
+    /* Safari and Chrome */
+}
+
+#statsGenre p {
+    display: inline-block;
+    padding: 0.3em 0.6em;
+    margin: 0.3em;
+    background-color: var(--accent);
+    border: 0.1em solid var(--accent);
+    border-radius: 0.3em;
+    text-align: center;
+    min-width: max-content;
+}
+
+#statsGenre p:first-of-type {
+    margin-left: 0;
+}
+
+#activiteit>div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6em;
+    margin: 1em 0;
+}
+
+.cardProfiel {
+
+    display: flex;
+    flex-direction: column;
+    width: 10.5em;
+    height: 16em;
+    box-shadow: .1em .1em .5em var(--grey);
+    border-radius: .5em;
+    background: var(--light);
+}
+
+.cardProfiel img:nth-of-type(1) {
+    width: 100%;
+    height: 65%;
+    object-fit: cover;
+    vertical-align: top;
+    border-radius: 0.5em 0.5em 0 0;
+}
+
+.cardProfiel div {
+    flex-direction: column;
+    padding: 0.2em 0.5em;
+
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: .5em;
+}
+
+.cardProfiel h4 {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    text-overflow: ellipsis;
+}
+
+.cardProfiel p {
+    font-size: 0.8em;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    text-overflow: ellipsis;
+}
+
+#heart {
+    width: 2em;
+    align-self: end;
+    margin-top: -1.1em;
+    padding-right: .5em;
+    stroke: var(--magenta);
+    fill: var(--gray);
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transform-origin: center;
+}
+#heart.like {
+    animation: 2s ease-in forwards like;
+    /* , 0.8s linear 2s 2 forwards beat ; */
+  }
+
+  #heart.unlike {
+    animation: 2s ease-out forwards unlike;
+  }
+
+  @keyframes like {
+    0% {
+      stroke-dashoffset: 100;
+      fill: var(--gray); 
+    }
+    
+    60% {
+      stroke-dashoffset: 0;
+      fill: var(--gray);
+    }
+    
+    100% {
+      stroke-dashoffset: 0;
+      fill: var(--magenta);
+    }
+  }
+
+  @keyframes unlike {
+    0% {
+      stroke-dashoffset: 0;
+      fill: var(--magenta); 
+    }
+    
+    30% {
+      stroke-dashoffset: 0;
+      fill: var(--gray);
+    }
+    
+    100% {
+      stroke-dashoffset: 100;
+      fill: var(--gray);
+    }
+  }
+  
+  /* @keyframes beat {
+    0% {
+      transform: scale(1, 1);
+    }
+  
+    50% {
+      transform: scale(0.9, 0.9);
+    }
+    
+    100% {
+      transform: scale(1, 1);
+    }
+  } */
 
 /* -----------------nav------------------------ */
 .dropdown h2 {
@@ -163,6 +582,7 @@ button {
     display: none;
 }
 
+
 /* -------------------open--------------------------- */
 
 .navigatieButton.open span:nth-of-type(1) {
@@ -198,7 +618,9 @@ button {
     transition-delay: 0.2s;
 }
 
+
 /* ----------------connectpage-------------- */
+
 
 .aanmelden {
     display: flex;
@@ -256,7 +678,7 @@ button {
     position: fixed;
     bottom: 0;
     width: 100vw;
-    margin-left:1em;
+    margin-left: 1em;
     height: auto;
 }
 
@@ -459,422 +881,6 @@ button {
     stroke-dasharray: 250;
     stroke-dashoffset: -250;
 }
-
-/* Zoek-pagina */
-
-#searchHeader {
-    border-bottom: solid 0.1em var(--dark)
-}
-
-.searchBar {
-    width: 90%;
-    padding: 10px;
-    margin-top: 20px;
-    font-size: 1em;
-}
-
-.searchList {
-    position: relative;
-    margin-bottom: 3em;
-}
-
-.searchList ul {
-    list-style-type: none;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5em;
-}
-
-.searchList li {
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.searchList li>div {
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.searchList img {
-    width: 3.5em;
-    height: 3.5em;
-    border-radius: 50%;
-    margin-right: 1.5em;
-}
-
-.searchList p {
-    margin: 0;
-}
-
-.swipeButton {
-    font-size: 1em;
-    font-weight: 600;
-    color: var(--dark);
-    background-color: var(--primary);
-    border: none;
-    border-radius: 0.5em;
-    padding: 0.6em 0.9em;
-    margin-left: auto;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.swipeButton:hover {
-    scale: 1.1;
-    filter: drop-shadow(var(--primary) 0.1em 0.1em 0.9em);
-}
-
-.moreLink {
-    color: var(--primary);
-    float: right;
-}
-
-/* genre-pagina */
-
-#genreHeaderDiv {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-#genreHeaderDiv h1 {
-    text-align: start;
-}
-
-.backArrow {
-    position: absolute;
-    left: 0;
-    width: 1.4em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.backArrow img {
-    transform: rotate(180deg);
-    width: 1.4em;
-    height: auto;
-}
-
-/* search-result-pagina */
-
-.searchResultList ul {
-    list-style-type: none;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5em;
-}
-
-.searchResultList li {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 1em;
-}
-
-.searchResultList img {
-    width: 3.5em;
-    height: 3.5em;
-    border-radius: 50%;
-    margin-right: 1.5em;
-}
-
-.searchResultList li>div {
-    width: 100%;
-}
-
-.nummerDiv {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.nummerDiv p {
-    margin: 0;
-    font-size: 1em;
-}
-
-.nummerDiv p:last-of-type {
-    font-size: 0.8em;
-}
-
-/* profiel-pagina */
-
-#user {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1em;
-}
-
-#user div {
-    display: flex;
-    justify-items: center;
-    align-items: center;
-}
-
-#user img {
-    width: 5em;
-    height: 5em;
-    border-radius: 50%;
-    margin-right: 1.5em;
-}
-
-#user button {
-    display: flex;
-    align-self: center;
-    font-size: 0.8em;
-    font-weight: 600;
-    color: var(--dark);
-    background-color: var(--primary);
-    border: none;
-    border-radius: 0.5em;
-    padding: 0.6em 0.9em;
-    cursor: pointer;
-    margin-left: auto;
-}
-
-#user button:hover {
-    scale: 1.1;
-    background-color: var(--light);
-    border: .15em solid var(--primary);
-}
-
-#user button:active {
-    /* scale: 1.1; */
-    background-color: var(--light);
-    border: .15em solid var(--accent);
-}
-
-
-#playlists {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-}
-
-#playlists a {
-    display: flex;
-    justify-content: space-between;
-
-    width: 95%;
-    height: 3em;
-    padding: .5em 1em;
-    margin-bottom: .7em;
-    border-radius: .5em;
-    text-decoration: none;
-
-    color: var(--dark);
-    border: solid .1em var(--primary);
-    /* box-shadow: .05em .05em .4em var(--primary); */
-}
-
-#playlists a:visited {
-    color: var(--dark);
-}
-
-#playlists div {
-    margin-right: auto;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-}
-
-#playlists div p {
-    margin-top: -.3em;
-    font-size: .95em;
-}
-
-.likedLink img:nth-of-type(1),
-.dislikedLink img:nth-of-type(1) {
-    width: 2.5em;
-    margin-right: 1em;
-}
-
-
-
-.likedLink img:nth-of-type(2) {
-    margin-left: auto;
-}
-
-.dislikedLink img:nth-of-type(2) {
-    margin-left: auto;
-}
-
-
-
-#playlists a:visited {
-    text-decoration: none;
-    color: var(--dark);
-}
-
-.blackversion {
-    filter: invert(100%) sepia(100%) saturate(10000%) hue-rotate(180deg) brightness(0%) contrast(100%);
-
-}
-
-#stats {
-    margin-bottom: 1em;
-}
-
-#statsLijst {
-    display: flex;
-}
-
-#statsLijst div {
-    margin-right: 1em;
-}
-
-#statsGenre {
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    scrollbar-width: none;
-    /* Firefox */
-}
-
-#statsGenre::-webkit-scrollbar {
-    display: none;
-    /* Safari and Chrome */
-}
-
-#statsGenre p {
-    display: inline-block;
-    padding: 0.3em 0.6em;
-    margin: 0.3em;
-    background-color: var(--accent);
-    border: 0.1em solid var(--accent);
-    border-radius: 0.3em;
-    text-align: center;
-    min-width: max-content;
-}
-
-#statsGenre p:first-of-type {
-    margin-left: 0;
-}
-
-#activiteit>div {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .6em;
-    margin: 1em 0;
-}
-
-.cardProfiel {
-    display: flex;
-    flex-direction: column;
-    width: 10.5em;
-    height: 16em;
-    box-shadow: .1em .1em .5em var(--grey);
-    border-radius: .5em;
-    background: var(--light);
-}
-
-.cardProfiel img:nth-of-type(1) {
-    width: 100%;
-    height: 65%;
-    object-fit: cover;
-    vertical-align: top;
-    border-radius: 0.5em 0.5em 0 0;
-}
-
-.cardProfiel div {
-    flex-direction: column;
-    padding: 0.2em 0.5em;
-    max-width: 100%;
-    box-sizing: border-box;
-    border-radius: .5em;
-}
-
-.cardProfiel h4 {
-    overflow: hidden;
-    white-space: nowrap;
-    width: 100%;
-    text-overflow: ellipsis;
-}
-
-.cardProfiel p {
-    font-size: 0.8em;
-    overflow: hidden;
-    white-space: nowrap;
-    width: 100%;
-    text-overflow: ellipsis;
-}
-
-#heart {
-    width: 2em;
-    align-self: end;
-    margin-top: -1.1em;
-    padding-right: .5em;
-    stroke: var(--magenta);
-    fill: var(--gray);
-    stroke-dasharray: 100;
-    stroke-dashoffset: 100;
-    transform-origin: center;
-}
-#heart.like {
-    animation: 2s ease-in forwards like;
-    /* , 0.8s linear 2s 2 forwards beat ; */
-  }
-
-  #heart.unlike {
-    animation: 2s ease-out forwards unlike;
-  }
-
-  @keyframes like {
-    0% {
-      stroke-dashoffset: 100;
-      fill: var(--gray); 
-    }
-    
-    60% {
-      stroke-dashoffset: 0;
-      fill: var(--gray);
-    }
-    
-    100% {
-      stroke-dashoffset: 0;
-      fill: var(--magenta);
-    }
-  }
-
-  @keyframes unlike {
-    0% {
-      stroke-dashoffset: 0;
-      fill: var(--magenta); 
-    }
-    
-    30% {
-      stroke-dashoffset: 0;
-      fill: var(--gray);
-    }
-    
-    100% {
-      stroke-dashoffset: 100;
-      fill: var(--gray);
-    }
-  }
-  
-  /* @keyframes beat {
-    0% {
-      transform: scale(1, 1);
-    }
-  
-    50% {
-      transform: scale(0.9, 0.9);
-    }
-    
-    100% {
-      transform: scale(1, 1);
-    }
-  } */
-
 
 
 /* ------------------likedpagina----------------- */
