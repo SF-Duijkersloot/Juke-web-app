@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="Juke.png">
+    <link rel="icon" type="image/x-icon" href="images/Juke.png">
     <link rel="stylesheet" href="style.css">
     <title>Juke.</title>
 </head>
 
 <body>
-    <header id="searchHeader">
+    <header>
         <%- include('../partials/nav', { user: user }) %>
 
     </header>
@@ -19,30 +19,11 @@
     <main>
         <h1>Zoek</h1>
         <!-- Zoekformulier -->
-        <form action="/search" method="get">
+        <form action="/search" method="get" class="searchContainer">
             <input type="text" name="q" class="searchBar" placeholder="Zoeken...">
-            <button type="submit">Search</button>
+            <button type="submit" class="searchButton"><img src="images/zoeken.svg" alt="Zoekknop" class="searchIcon"></button>
         </form>
-        <!-- <section class="searchList">
-            <h2>Top genres</h2>
-            <p>Swipe en ontdek op basis van een specifieke genre</p>
-            <ul>
-                <% genres.slice(0, 5).forEach(genre => { %>
-                    <li>
-                        <div>
-                            <img src="<%= genre.image %>" alt="<%= genre.name %>">
-                            <p><%= genre.name %></p>
-                        </div>
-                        <form action="/search-recommendations" method="get">
-                            <input type="hidden" name="seedUri" value="<%= genre.name %>">
-                            <input type="hidden" name="seed_type" value="genre">
-                            <input type="submit" value="Swipe" class="swipeButton">
-                        </form>
-                    </li>
-                <% }) %>
-            </ul>
-            <a href="/genres" class="moreLink">Meer weergeven</a>
-        </section> -->
+
         <section class="searchList">
             <h2>Jouw topartiesten</h2>
             <p>Swipe en ontdek op basis van een specifieke artiest</p>
@@ -63,6 +44,7 @@
                 <% }) %>
             </ul>
         </section>
+        
         <section class="searchList">
             <h2>Jouw topnummers</h2>
             <p>Swipe en ontdek op basis van een specifiek nummer</p>
@@ -83,7 +65,7 @@
                 <% }) %>
             </ul>
         </section>
-        
+
     </main>
 
     <script defer src="scripts/app.js"></script>

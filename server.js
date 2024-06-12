@@ -172,6 +172,7 @@ app.get('/callback', async (req, res) => {
                 const user = {
                     _id: profileData.id,
                     name: profileData.display_name,
+                    image: profileData.images[0]?.url || null,
                     playlist_id: '',
                     recommendations: [],
                     swipes: {
@@ -301,7 +302,8 @@ app.get('/profiel', async (req, res) => {
         const dislikes = user.recommendations.filter(track => track.action === 'dislike').length
 
         res.render('pages/profiel', { 
-            user: req.session.user, 
+            user: req.session.user,
+            image: user.image, 
             genres: genres,
             DB_user: user,
             recommendations: recommendations,
@@ -958,4 +960,8 @@ app.listen(port, () => {
 
 app.get('/liked-recommendations', (req, res) => {
     res.render('pages/liked', { user: req.session.user})
+})
+
+app.get('/disliked-recommendations', (req, res) => {
+    res.render('pages/disliked', { user: req.session.user})
 })

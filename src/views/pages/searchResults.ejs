@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="Juke.png">
+    <link rel="icon" type="image/x-icon" href="images/Juke.png">
     <link rel="stylesheet" href="style.css">
     <title>Juke.</title>
 </head>
@@ -15,11 +15,14 @@
     </header>
 
     <main>
-        <a href="/zoek" class="backArrow"><img src="/images/Arrow.svg"></a>
-        <h1>Zoek resultaten</h1>
-        <form action="/search" method="get">
+        <div class="backHeader">
+            <a href="/zoek" class="backArrow"><img src="/images/Arrow.svg"></a>
+            <h1>Resultaten</h1>
+        </div>
+
+        <form action="/search" method="get" class="searchContainer">
             <input type="text" name="q" class="searchBar" placeholder="Zoeken..." value="<%= query %>">
-            <button type="submit" class="searchButton">Search</button>
+            <button type="submit" class="searchButton"><img src="images/zoeken.svg" alt="Zoekknop" class="searchIcon"></button>
         </form>
 
         <section class="searchResultList">
@@ -29,8 +32,8 @@
                 <li>
                     <img src="<%= track.album.images[0]?.url %>" alt="<%= track.name %>"> 
                     <div class="nummerDiv">
-                        <p><%= track.name %></p>
-                        <p><%= track.artists.map(artist => artist.name).join(', ') %></p>
+                        <p class="textOverflow"><%= track.name %></p>
+                        <p class="textOverflow"><%= track.artists.map(artist => artist.name).join(', ') %></p>
                     </div>
 
                     <form action="/search-recommendations" method="get">
@@ -51,8 +54,9 @@
                 <li>
                     <img src="<%= artist.images[0]?.url %>" alt="<%= artist.name %>">
                     <div>
-                        <p><%= artist.name %></p>
+                        <p class="textOverflow"><%= artist.name %></p>
                     </div>
+
                     <!-- <a href="/search-recommendations?seed_uri=<%= artist.id %>&seed_type=seed_artists" class="recommendation-button">Get Recommendations</a> -->
                     <form action="/search-recommendations" method="get">
                         <input type="hidden" name="seed_uri" value="<%= artist.id %>">
