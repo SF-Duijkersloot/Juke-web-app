@@ -510,6 +510,10 @@ button {
     z-index: 1;
 }
 
+.dropdown > img {
+  display: none;
+}
+
 .navigatieButton {
     display: flex;
     justify-content: center;
@@ -909,6 +913,8 @@ button {
 
 
 .likedList {
+    display: flex;
+    flex-direction: column;
     width: 10.5em;
     height: 16em;
     text-align: start;
@@ -983,7 +989,15 @@ button {
         padding: 1em 2em;
         background-color: var(--dark);
         border-radius: 0;
-        z-index: 200;
+        /* z-index: 200; */
+    }
+
+    .dropdown > img{
+        display: contents;
+        height: 4em;
+        z-index: 2;
+        bottom: 1em;
+        left: 1em;
     }
 
     .navigatieButton {
