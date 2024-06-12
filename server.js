@@ -172,7 +172,7 @@ app.get('/callback', async (req, res) => {
                 const user = {
                     _id: profileData.id,
                     name: profileData.display_name,
-                    image: profileData.images[0].url,
+                    image: profileData.images[0]?.url || null,
                     playlist_id: '',
                     recommendations: [],
                     swipes: {
