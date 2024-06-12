@@ -238,14 +238,8 @@ button {
 
 #user {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 1em;
-}
-
-#user div {
-    display: flex;
-    justify-items: center;
     align-items: center;
+    margin:0.5em 0 1.5em 0;
 }
 
 #user img {
@@ -255,7 +249,7 @@ button {
     margin-right: 1.5em;
 }
 
-#user button {
+#user a {
     display: flex;
     align-self: center;
     font-size: 0.8em;
@@ -267,15 +261,16 @@ button {
     padding: 0.6em 0.9em;
     cursor: pointer;
     margin-left: auto; 
+    text-decoration: none;
 }
 
-#user button:hover {
+#user a:hover {
     scale: 1.1;
    background-color: var(--light);
    border: .15em solid var(--primary);
 }
 
-#user button:active {
+#user a:active {
     /* scale: 1.1; */
    background-color: var(--light);
    border: .15em solid var(--accent);

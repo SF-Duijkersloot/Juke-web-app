@@ -12,19 +12,16 @@
 <body>
     <header>
         <%- include('../partials/nav', { user: user }) %>
-        <h1>Profiel</h1>
+
     </header>
 
     <main>
+        <h1>Profiel</h1>
         <section id="user">
             <img src="images/pop.jpg">
             <!-- Juke logo als pfp gebruiken? -->
-
-            <div>
-                <h3><%= user.display_name %></h3>
-                <!-- <p>Bio? gaan we dit houden?</p> -->
-            </div>
-            <button>settings</button> 
+            <h3><%= user.display_name %></h3>
+            <a href="/afmelden">Uitloggen</a>
         </section>
 
         <section id="playlists">
@@ -34,7 +31,7 @@
                     <h4>Liked</h4>
                     <p>bekijk je gelikete nummers</p>
                 </div>
-                <img src="images/arrow.svg" alt="go to liked"  class="blackversion">
+                <img src="images/arrow.svg" alt="go to liked" class="blackversion">
             </a>
             <a href="/disliked-recommendations" class="dislikedLink">
                 <img src="images/Dislike.svg" alt="dislike" class="blackversion">
@@ -50,15 +47,15 @@
             <h2>Statistieken</h2>
             <div id="statsLijst">
                 <div>
-                    <h4><%= stats.totalSwipes %></h4>
+                    <h4><span class="counter" data-target="<%= stats.totalSwipes %>">0</span></h4>
                     <p>swipes</p>
                 </div>
                 <div>
-                    <h4><%= stats.likes %></h4>
+                    <h4><span class="counter" data-target="<%= stats.likes %>">0</span></h4>
                     <p>geliket</p>
                 </div>
                 <div>
-                    <h4><%= stats.dislikes %></h4>
+                    <h4><span class="counter" data-target="<%= stats.dislikes %>">0</span></h4>
                     <p>gedisliket</p>
                 </div>
             </div>
@@ -74,19 +71,21 @@
             <h2>Activiteit</h2>
             <div>
                 <% recommendations.forEach(track => { %>
-                    <div class="cardProfiel">
-                        <img src="<%= track.images[0].url %>">
-                        <div>
-                            <h4><%= track.name %></h4>
-                            <p><%= track.artists.join(", ") %></p>
-                            <p><%= track.action %></p>
-                        </div>
+                <div class="cardProfiel">
+                    <img src="<%= track.images[0].url %>">
+                    <div>
+                        <h4><%= track.name %></h4>
+                        <p><%= track.artists.join(", ") %></p>
+                        <p><%= track.action %></p>
                     </div>
                 </div>
-                <% }) %>
+            </div>
+            <% }) %>
             </div>
         </section>
     </main>
+
+    <script defer src="scripts/counter.js"></script>
 </body>
 
 </html>
