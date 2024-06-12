@@ -172,7 +172,6 @@ app.get('/callback', async (req, res) => {
                 const user = {
                     _id: profileData.id,
                     name: profileData.display_name,
-                    image: profileData.images[0]?.url || null,
                     playlist_id: '',
                     recommendations: [],
                     swipes: {
@@ -295,17 +294,18 @@ app.get('/profiel', async (req, res) => {
 
         // Get user from DB
         const user = await usersCollection.findOne({ _id: req.session.user.id })
-        const recommendations = user.recommendations.reverse()
+        
+        // Recent recommendations first
+        const recommendations = user.recommendations.reverse() 
 
-        const totalSwipes = user.recommendations.length
-        const likes = user.recommendations.filter(track => track.action === 'like').length
-        const dislikes = user.recommendations.filter(track => track.action === 'dislike').length
+        const totalSwipes = user.swipes.likes + user.swipes.dislikes
+        const likes = user.swipes.likes
+        const dislikes = user.swipes.dislikes
 
         res.render('pages/profiel', { 
             user: req.session.user,
-            image: user.image, 
+            image: req.session.user.images[1]?.url, 
             genres: genres,
-            DB_user: user,
             recommendations: recommendations,
             stats: {
                 totalSwipes: totalSwipes,
