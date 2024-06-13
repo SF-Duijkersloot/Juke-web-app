@@ -363,8 +363,8 @@ function createCardElement(track, isSearch = false) {
             <header style="background-image: url(${imageUrl})"></header>
             <section>
                 <div>
-                    <h3>${trackName}</h3>
-                    <p>${artistNames.join(', ')}</p>
+                    <h3 class="textOverflow">${trackName}</h3>
+                    <p class="textOverflow">${artistNames.join(', ')}</p>
                 </div>
             </section>
         </article>

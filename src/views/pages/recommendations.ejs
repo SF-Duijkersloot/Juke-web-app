@@ -82,8 +82,8 @@
                             <header style="background-image: url(<%= track.album.images[0]?.url %>)"></header>
                             <section>
                                 <div>
-                                    <h3><%= track.name %></h3>
-                                    <p><%= track.artists.map(artist => artist.name).join(', ') %></p>
+                                    <h3 class="textOverflow"><%= track.name %></h3>
+                                    <p class="textOverflow"><%= track.artists.map(artist => artist.name).join(', ') %></p>
                                 </div>
                             </section>
                         </article>
