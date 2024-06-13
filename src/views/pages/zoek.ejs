@@ -32,7 +32,7 @@
                     <li>
                         <div>
                             <img src="<%= artist.images[0].url %>" alt="<%= artist.name %>">
-                            <p><%= artist.name %></p>
+                            <p class="textOverflow"><%= artist.name %></p>
                         </div>
                         <form action="/search-recommendations" method="get">
                             <input type="hidden" name="seed_uri" value="<%= artist.id %>">
@@ -53,7 +53,7 @@
                     <li>
                         <div>
                             <img src="<%= track.album.images[0].url %>" alt="<%= track.name %>">
-                            <p><%= track.name %> - <%= track.artists.map(artist => artist.name).join(', ') %></p>
+                            <p class="textOverflow"><%= track.name %> - <%= track.artists.map(artist => artist.name).join(', ') %></p>
                         </div>
                         <form action="/search-recommendations" method="get">
                             <input type="hidden" name="seed_uri" value="<%= track.id %>">
