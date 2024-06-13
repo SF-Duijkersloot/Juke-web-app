@@ -19,7 +19,6 @@
     
 // }); 
 
-
 document.addEventListener('DOMContentLoaded', () => {
   const allHearts = document.querySelectorAll('#heart');
 
@@ -52,6 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
           if (data.status === 'success') {
               heart.classList.toggle('like', !isLiked);
               heart.classList.toggle('unlike', isLiked);
+
+              // Verwijder de huidige LI van de lijst na een korte vertraging
+              setTimeout(() => {
+                  const listItem = heart.closest('li');
+                  listItem.remove();
+              }, 2200); // Pas de vertraging aan op basis van je animatieduur
+              
           } else {
               console.error('Error:', data.message);
           }
@@ -67,4 +73,5 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   });
 });
+
 
