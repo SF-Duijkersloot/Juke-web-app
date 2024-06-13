@@ -84,8 +84,6 @@ app.get('/logout', (req, res) => {
 
 
 
-
-
 /*==========================================\
 
         Spotify Authorization Flow
@@ -620,13 +618,12 @@ app.get('/delete-playlist', async (req, res) => {
 
 app.post('/like', async (req, res) => {
     await handleSongAction(req, res, 'like');
-})
+});
 
 app.post('/dislike', async (req, res) => {
     await handleSongAction(req, res, 'dislike');
-})
+});
 
-// Helper function for handling the "Like" and "Dislike" actions
 async function handleSongAction(req, res, action) {
     const { track_id, track_name, track_artists, track_images } = req.body;
 
@@ -683,9 +680,11 @@ async function handleSongAction(req, res, action) {
         }
         console.log(`Song updated/added with id: ${track_id}`);
 
-        // Add song to playlist if it's liked
+        // Add or remove song to/from playlist based on action
         if (action === 'like') {
             await addSongToPlaylist(req);
+        } else {
+            await removeSongFromPlaylist(req);
         }
 
         // Register the song in the songs collection
@@ -967,12 +966,13 @@ app.post('/unlike', async (req, res) => {
 
         // Remove the track from the user's recommendations array
         await usersCollection.updateOne(
-            { _id: userId },
+            { _id: userId, "recommendations._id": track_id },
             { 
-                $pull: { recommendations: { _id: track_id } },
+                $set: { "recommendations.$.action": "dislike" },
                 $inc: { 'swipes.likes': -1 }
             }
         );
+        
         console.log(`Song removed with id: ${track_id}`);
 
         // Remove the song from the playlist
@@ -1022,10 +1022,64 @@ app.listen(port, () => {
 
 
 
-app.get('/liked-recommendations', (req, res) => {
-    res.render('pages/liked', { user: req.session.user})
-})
+// app.get('/liked-recommendations', (req, res) => {
 
-app.get('/disliked-recommendations', (req, res) => {
-    res.render('pages/disliked', { user: req.session.user})
-})
+//     res.render('pages/liked', { user: req.session.user})
+// })
+
+app.get('/liked-recommendations', async (req, res) => {
+    if (req.session.loggedIn) {
+        try {
+            const userId = req.session.user.id;
+            // Haal nummers op met de actie 'like' voor de huidige gebruiker
+            const likedSongs = await usersCollection.aggregate([
+                { $match: { _id: userId } },
+                { $unwind: "$recommendations" },
+                { $match: { "recommendations.action": "like" } },
+                { $project: { recommendations: 1, _id: 0 } }
+            ]).toArray();
+
+            // Extraheer alleen de nummers uit de resultaten
+            const songs = likedSongs.map(item => item.recommendations);
+
+            res.render('pages/liked', { user: req.session.user, songs: songs });
+        } catch (err) {
+            console.error('Error fetching liked recommendations:', err);
+            res.status(500).send('An error occurred while fetching liked recommendations.');
+        }
+    } else {
+        res.render('pages/connect');
+    }
+});
+
+
+
+
+// app.get('/disliked-recommendations', (req, res) => {
+//     res.render('pages/disliked', { user: req.session.user})
+// })
+
+app.get('/disliked-recommendations', async (req, res) => {
+    if (req.session.loggedIn) {
+        try {
+            const userId = req.session.user.id;
+            // Haal nummers op met de actie 'dislike' voor de huidige gebruiker
+            const dislikedSongs = await usersCollection.aggregate([
+                { $match: { _id: userId } },
+                { $unwind: "$recommendations" },
+                { $match: { "recommendations.action": "dislike" } },
+                { $project: { recommendations: 1, _id: 0 } }
+            ]).toArray();
+
+            // Extraheer alleen de nummers uit de resultaten
+            const songs = dislikedSongs.map(item => item.recommendations);
+
+            res.render('pages/disliked', { user: req.session.user, songs: songs });
+        } catch (err) {
+            console.error('Error fetching disliked recommendations:', err);
+            res.status(500).send('An error occurred while fetching disliked recommendations.');
+        }
+    } else {
+        res.render('pages/connect');
+    }
+});
