@@ -528,33 +528,31 @@ async function getRecommendations(req, limit, seed_type, seed_uri) {
 
 async function filterRecommendations(req, recommendations) {
     try {
-        const filteredRecommendations = await Promise.all(
-            recommendations.map(async (track) => {
-                if (!hasPreviewUrl(track)) {
-                    console.log(`Track "${track.name}" doesn't have a preview_url`)
-                    return null
-                }
+        const filteredRecommendations = recommendations.filter(async (track) => {
+            if (!hasPreviewUrl(track)) {
+                console.log(`Track "${track.name}" doesn't have a preview_url`);
+                return null;
+            }
 
-                const userRecommendations = await usersCollection.findOne(
-                    {
-                        _id: req.session.user.id,
-                        'recommendations._id': track.id
-                    },
-                    { projection: { _id: 1 } }
-                )
+            const userRecommendations = await usersCollection.findOne(
+                {
+                    _id: req.session.user.id,
+                    'recommendations._id': track.id
+                },
+                { projection: { _id: 1 } }
+            );
 
-                if (userRecommendations) {
-                    console.log(`Track "${track.name}" already registered.`)
-                    return null
-                }
+            if (userRecommendations) {
+                console.log(`Track "${track.name}" already registered.`);
+                return null;
+            }
 
-                return track
-            })
-        )
+            return track;
+        });
 
-        return filteredRecommendations.filter(Boolean)
+        return filteredRecommendations.filter(Boolean);
     } catch (error) {
-        console.error('Error filtering recommendations:', error)
+        console.error('Error filtering recommendations:', error);
     }
 }
 
