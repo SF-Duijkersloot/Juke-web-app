@@ -22,7 +22,7 @@
 
         <form action="/search" method="get" class="searchContainer">
             <input type="text" name="q" class="searchBar" placeholder="Zoeken..." value="<%= query %>">
-            <button type="submit" class="searchButton"><img src="images/zoeken.svg" alt="Zoekknop"></button>
+            <button type="submit" class="searchButton"><img src="images/zoeken.svg" alt="Zoekknop" class="searchIcon"></button>
         </form>
 
         <section class="searchResultList">
@@ -30,13 +30,18 @@
             <ul>
                 <% results.tracks.items.forEach(track => { %>
                 <li>
-                    <img src="<%= track.album.images[0].url %>" alt="<%= track.name %>">
+                    <img src="<%= track.album.images[0]?.url %>" alt="<%= track.name %>"> 
                     <div class="nummerDiv">
                         <p class="textOverflow"><%= track.name %></p>
                         <p class="textOverflow"><%= track.artists.map(artist => artist.name).join(', ') %></p>
                     </div>
-                    <a href="/search-recommendations?seedUri=<%= track.id %>&seed_type=seed_tracks"
-                        class="swipeButton">Swipe</a>
+
+                    <form action="/search-recommendations" method="get">
+                        <input type="hidden" name="seed_uri" value="<%= track.id %>">
+                        <input type="hidden" name="seed_type" value="seed_tracks">
+                        <input type="hidden" name="seed_name" value="<%= track.name %>">
+                        <input type="submit" value="Swipe" class="swipeButton">
+                    </form>                    
                 </li>
                 <% }); %>
             </ul>
@@ -47,12 +52,18 @@
             <ul>
                 <% results.artists.items.forEach(artist => { %>
                 <li>
-                    <img src="<%= artist.images[0].url %>" alt="<%= artist.name %>">
+                    <img src="<%= artist.images[0]?.url %>" alt="<%= artist.name %>">
                     <div>
                         <p class="textOverflow"><%= artist.name %></p>
                     </div>
-                    <a href="/search-recommendations?seedUri=<%= artist.id %>&seed_type=seed_artists"
-                        class="swipeButton">Swipe</a>
+
+                    <!-- <a href="/search-recommendations?seed_uri=<%= artist.id %>&seed_type=seed_artists" class="recommendation-button">Get Recommendations</a> -->
+                    <form action="/search-recommendations" method="get">
+                        <input type="hidden" name="seed_uri" value="<%= artist.id %>">
+                        <input type="hidden" name="seed_type" value="seed_artists">
+                        <input type="hidden" name="seed_name" value="<%= artist.name %>">
+                        <input type="submit" value="Swipe" class="swipeButton">
+                    </form>   
                 </li>
                 <% }); %>
             </ul>

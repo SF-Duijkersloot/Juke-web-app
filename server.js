@@ -172,7 +172,6 @@ app.get('/callback', async (req, res) => {
                 const user = {
                     _id: profileData.id,
                     name: profileData.display_name,
-                    // image: profileData.images[0].url,
                     image: profileData.images[0]?.url || null,
                     playlist_id: '',
                     recommendations: [],
@@ -222,28 +221,39 @@ app.get('/callback', async (req, res) => {
 
 ===========================================*/
 
+app.get('/', async (req, res) => {
+    if (req.session.loggedIn) {
+        try {
+            res.redirect('/recommendations')
+        } catch (error) {
+            console.error(error)
+        }
+    } else {
+        res.render('pages/connect')
+    }
+})
 
 app.get('/zoek', async (req, res) => {
     if (req.session.loggedIn) {
         try {
             // Haal de topartiesten en genres op
-            const { artists, genres } = await getTopArtists(req);
-            const topTracks = await getTopTracks(req);
+            const { artists, genres } = await getTopArtists(req)
+            const topTracks = await getTopTracks(req)
 
             res.render('pages/zoek', {
                 user: req.session.user,
                 genres: genres,
                 artists: artists,
                 topTracks: topTracks,  // voeg topTracks toe aan de render
-            });
+            })
         } catch (error) {
-            console.error('Error fetching data for zoek page:', error);
-            res.status(500).send('An error occurred while fetching data for zoek page.');
+            console.error('Error fetching data for zoek page:', error)
+            res.status(500).send('An error occurred while fetching data for zoek page.')
         }
     } else {
-        res.render('pages/connect');
+        res.render('pages/connect')
     }
-});
+})
 
 
 
@@ -252,20 +262,20 @@ app.get('/zoek', async (req, res) => {
 //     if (req.session.loggedIn) {
 //         try {
 //             // Haal de genres op vanuit de Spotify API
-//             const genres = await getGenresFromSpotifyAPI(); // Dit is een placeholder voor de functie om genres op te halen van Spotify
+//             const genres = await getGenresFromSpotifyAPI() // Dit is een placeholder voor de functie om genres op te halen van Spotify
 
 //             res.render('pages/genres', {
 //                 user: req.session.user,
 //                 genres: genres
-//             });
+//             })
 //         } catch (error) {
-//             console.error('Error fetching genres:', error);
-//             res.status(500).send('An error occurred while fetching genres.');
+//             console.error('Error fetching genres:', error)
+//             res.status(500).send('An error occurred while fetching genres.')
 //         }
 //     } else {
-//         res.render('pages/connect');
+//         res.render('pages/connect')
 //     }
-// });
+// })
 
 
 
@@ -382,28 +392,28 @@ async function getTopTracks(req)
 
 ===========================================*/
 
-async function getRecommendations(req, seedTracks, limit, track_id, type) {
+async function getRecommendations(req, limit, seed_type, seed_uri) {
     try {
-        let approvedRecommendations = [];
-        let remainingLimit = limit;
-
+        let approvedRecommendations = []
+        let remainingLimit = limit
+        
         while (remainingLimit > 0) {
-            const recommendations = (
-                await fetchWebApi(
-                    req,
-                    `v1/recommendations?limit=${remainingLimit}&seed_tracks=${seedTracks.join(',')}`,
-                    'GET'
-                )
-            ).tracks;
+                const recommendations = (
+                    await fetchWebApi(
+                        req,
+                        `v1/recommendations?limit=${remainingLimit}&${seed_type}=${seed_uri.join(',')}`,
+                        'GET'
+                    )
+                ).tracks
 
-            const filteredRecommendations = await filterRecommendations(req, recommendations);
-            approvedRecommendations.push(...filteredRecommendations);
-            remainingLimit = limit - approvedRecommendations.length;
+            const filteredRecommendations = await filterRecommendations(req, recommendations)
+            approvedRecommendations.push(...filteredRecommendations)
+            remainingLimit = limit - approvedRecommendations.length
         }
 
-        return approvedRecommendations.slice(0, limit);
+        return approvedRecommendations.slice(0, limit)
     } catch (error) {
-        console.error('Error getting recommendations:', error);
+        console.error('Error getting recommendations:', error)
     }
 }
 
@@ -412,8 +422,8 @@ async function filterRecommendations(req, recommendations) {
         const filteredRecommendations = await Promise.all(
             recommendations.map(async (track) => {
                 if (!hasPreviewUrl(track)) {
-                    console.log(`Track "${track.name}" doesn't have a preview_url`);
-                    return null;
+                    console.log(`Track "${track.name}" doesn't have a preview_url`)
+                    return null
                 }
 
                 const userRecommendations = await usersCollection.findOne(
@@ -422,97 +432,107 @@ async function filterRecommendations(req, recommendations) {
                         'recommendations._id': track.id
                     },
                     { projection: { _id: 1 } }
-                );
+                )
 
                 if (userRecommendations) {
-                    console.log(`Track "${track.name}" already registered.`);
-                    return null;
+                    console.log(`Track "${track.name}" already registered.`)
+                    return null
                 }
 
-                return track;
+                return track
             })
-        );
+        )
 
-        return filteredRecommendations.filter(Boolean);
+        return filteredRecommendations.filter(Boolean)
     } catch (error) {
-        console.error('Error filtering recommendations:', error);
+        console.error('Error filtering recommendations:', error)
     }
 }
 
 function hasPreviewUrl(track) {
-    return track.preview_url !== null && track.preview_url !== '';
+    return track.preview_url !== null && track.preview_url !== ''
 }
 
+
+
+
+/*==========================================\
+
+           Regular recommendations
+
+===========================================*/
 app.get('/recommendations', async (req, res) => {
     try {
-        const topTracks = await getTopTracks(req);
-        const seedUri = topTracks.map((track) => track.id);
-        // const seedUri = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
-        const limit = 2;
+        const limit = 2
         const seed_type = 'seed_tracks'
-        const recommendedTracks = await getRecommendations(req, seedUri, limit, seed_type);
-        res.render('recommendations', { tracks: recommendedTracks });
-    } catch (error) {
-        console.error('Error fetching recommendations:', error);
-        res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
-    }
-});
+        const topTracks = await getTopTracks(req)
+        const seed_uri = topTracks.map((track) => track.id)
 
-app.get('/search-recommendations', async (req, res) => {
-    try {
-        const { seedUri, seed_type } = req.query;
-        if (!seedUri || !seed_type) {
-            return res.status(400).json({ error: 'No query provided' });
-        }
-        const limit = 2;
-        const recommendedTracks = await getRecommendations(req, [seedUri], limit, seed_type);
-        res.render('recommendations', { tracks: recommendedTracks });
+        const recommendedTracks = await getRecommendations(req, limit, seed_type, seed_uri)
+        res.render('pages/verkennen', { tracks: recommendedTracks, user: req.session.user })
     } catch (error) {
-        console.error('Error fetching recommendations:', error);
-        res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
+        console.error('Error fetching recommendations:', error)
+        res.status(500).json({ error: 'An error occurred while fetching recommendations.' })
     }
-});
-
+})
 
 app.get('/new-recommendation', async (req, res) => {
     try {
-        const topTracks = await getTopTracks(req);
-        const seedTracks = topTracks.map((track) => track.id);
-        // const seedTracks = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
-        const limit = 1;
-        const recommendedTracks = await getRecommendations(req, seedTracks, limit);
-        res.json({ recommendation: recommendedTracks[0] });
+        const limit = 2
+        const seed_type = 'seed_tracks'
+        const topTracks = await getTopTracks(req)
+        const seed_uri = topTracks.map((track) => track.id)
+
+        const recommendedTracks = await getRecommendations(req, limit, seed_type, seed_uri)
+        res.json({ recommendation: recommendedTracks[0] })
     } catch (error) {
-        console.error('Error fetching new recommendation:', error);
-        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' });
+        console.error('Error fetching new recommendation:', error)
+        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' })
     }
-});
+})
 
 
-// --------------------------------------
 
-app.get('/', async (req, res) => 
-    {
-        if (req.session.loggedIn) {
-            try {
-                const topTracks = await getTopTracks(req);
-                const seedTracks = topTracks.map((track) => track.id);
-                // const seedTracks = ['2lXqwlG8za1sWKgHRwEiEC', '0jsXpJsdXhnwnwnCLKjYLF']
-                const limit = 2;
-                const recommendedTracks = await getRecommendations(req, seedTracks, limit);
-                res.render('pages/verkennen', { 
-                    user: req.session.user,
-                    tracks: recommendedTracks
-                })
-            } catch (error) {
-                console.error('Error fetching recommendations:', error);
-                res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
-            }
-            
-        } else {
-            res.render('pages/connect')
+/*==========================================\
+
+           Searched recommendations
+
+===========================================*/
+app.get('/search-recommendations', async (req, res) => {
+    try {
+        const { seed_uri, seed_type, seed_name } = req.query
+
+        if (!seed_uri || !seed_type) {
+            return res.status(400).json({ error: 'No query provided' })
         }
-    })
+        const limit = 2
+        const recommendedTracks = await getRecommendations(req, limit, seed_type, [seed_uri])
+        res.render('pages/recommendations', { tracks: recommendedTracks, user: req.session.user, seed_name: seed_name })
+    } catch (error) {
+        console.error('Error fetching recommendations:', error)
+        res.status(500).json({ error: 'An error occurred while fetching recommendations.' })
+    }
+})
+
+app.get('/new-search-recommendation', async (req, res) => {
+    try {
+        const { seed_type, seed_uri } = req.query
+
+        if (!seed_type || !seed_uri) {
+            return res.status(400).json({ error: 'Missing seed_type or seed_uri' })
+        }
+
+        const limit = 1
+        const recommendedTracks = await getRecommendations(req, limit, seed_type, [seed_uri])
+        res.json({ recommendation: recommendedTracks[0] })
+    } catch (error) {
+        console.error('Error fetching new recommendation:', error)
+        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' })
+    }
+})
+
+
+
 
 /*==========================================\
 
@@ -752,32 +772,12 @@ async function registerSongCollection(req, action) {
                   Search bar
 
 ===========================================*/
-// app.get('/search', async (req, res) => {
-//     const query = req.query.q;
-
-//     if (!query) {
-//         return res.status(400).send({ error: 'No query provided' });
-//     }
-
-//     try {
-//         const results = await fetchWebApi(
-//             req,
-//             `v1/search?q=${encodeURIComponent(query)}&type=track,artist,album&limit=10`,
-//             'GET'
-//         );
-
-//         res.render('searchResults', { results: results, query: query });
-//     } catch (error) {
-//         console.error('Error performing search:', error);
-//         res.status(500).json({ error: 'An error occurred while performing search.' });
-//     }
-// });
 
 app.get('/search', async (req, res) => {
-    const query = req.query.q;
+    const query = req.query.q
 
     if (!query) {
-        return res.status(400).send({ error: 'No query provided' });
+        return res.status(400).send({ error: 'No query provided' })
     }
 
     try {
@@ -785,22 +785,15 @@ app.get('/search', async (req, res) => {
             req,
             `v1/search?q=${encodeURIComponent(query)}&type=track,artist,album&limit=10`,
             'GET'
-        );
+        )
 
-        // Get user information here, assuming you have a way to do so
-      
-        // const user = req.user; // For example, if user information is stored in the request object
-
-        // Pass both results and user to the searchResults view
-        res.render('pages/searchResults', { results: results, query: query, user: req.session.user });
+        res.render('pages/searchResults', { results: results, query: query, user: req.session.user })
 
     } catch (error) {
-        console.error('Error performing search:', error);
-        res.status(500).json({ error: 'An error occurred while performing search.' });
+        console.error('Error performing search:', error)
+        res.status(500).json({ error: 'An error occurred while performing search.' })
     }
-});
-
-
+})
 
 
 /*==========================================\
@@ -815,27 +808,27 @@ async function getTopArtists(req) {
         const artists = (await fetchWebApi(
             req,
             'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
-        )).items;
+        )).items
 
         // Create a list of unique genres
-        let genresMap = {};
+        let genresMap = {}
         artists.forEach(artist => {
             artist.genres.forEach(genre => {
                 if (!genresMap[genre]) {
                     genresMap[genre] = {
                         name: genre,
                         image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
-                    };
+                    }
                 }
-            });
-        });
+            })
+        })
 
         // Convert the genresMap to an array
-        const genres = Object.values(genresMap);
+        const genres = Object.values(genresMap)
 
-        return { artists, genres };
+        return { artists, genres }
     } catch (error) {
-        console.error('Error fetching top artists:', error);
+        console.error('Error fetching top artists:', error)
     }
 }
 
@@ -852,8 +845,8 @@ async function getGenresFromSpotifyAPI(req) {
         // Gebruik de fetchWebApi-functie om een verzoek naar de Spotify API te doen
         // Return een array van genres
     } catch (error) {
-        console.error('Error fetching genres from Spotify API:', error);
-        throw new Error('An error occurred while fetching genres from Spotify API.');
+        console.error('Error fetching genres from Spotify API:', error)
+        throw new Error('An error occurred while fetching genres from Spotify API.')
     }
 }
 
@@ -862,20 +855,20 @@ app.get('/genres', async (req, res) => {
     if (req.session.loggedIn) {
         try {
             // Haal de genres op vanuit de Spotify API
-            const genres = await getGenresFromSpotifyAPI(req); // Roep de functie aan met 'req' als argument
+            const genres = await getGenresFromSpotifyAPI(req) // Roep de functie aan met 'req' als argument
 
             res.render('pages/genres', {
                 user: req.session.user,
                 genres: genres
-            });
+            })
         } catch (error) {
-            console.error('Error fetching genres:', error);
-            res.status(500).send('An error occurred while fetching genres.');
+            console.error('Error fetching genres:', error)
+            res.status(500).send('An error occurred while fetching genres.')
         }
     } else {
-        res.render('pages/connect');
+        res.render('pages/connect')
     }
-});
+})
 
 
 /*==========================================\
@@ -889,27 +882,27 @@ async function getTopGenres(req) {
         const artists = (await fetchWebApi(
             req,
             'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
-        )).items;
+        )).items
 
         // Create a list of unique genres
-        let genresMap = {};
+        let genresMap = {}
         artists.forEach(artist => {
             artist.genres.forEach(genre => {
                 if (!genresMap[genre]) {
                     genresMap[genre] = {
                         name: genre,
                         image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
-                    };
+                    }
                 }
-            });
-        });
+            })
+        })
 
         // Convert the genresMap to an array
-        const genres = Object.values(genresMap);
+        const genres = Object.values(genresMap)
 
-        return { genres };
+        return { genres }
     } catch (error) {
-        console.error('Error fetching genres:', error);
+        console.error('Error fetching genres:', error)
     }
 }
 
@@ -924,28 +917,28 @@ async function getTopGenres(req) {
 app.get('/genres', async (req, res) => {
     if (req.session.loggedIn) {
         try {
-            const genres = await getGenresFromSpotifyAPI(req);
+            const genres = await getGenresFromSpotifyAPI(req)
             res.render('pages/genres', {
                 user: req.session.user,
                 genres: genres
-            });
+            })
         } catch (error) {
-            console.error('Error fetching genres:', error);
-            res.status(500).send('An error occurred while fetching genres.');
+            console.error('Error fetching genres:', error)
+            res.status(500).send('An error occurred while fetching genres.')
         }
     } else {
-        res.render('pages/connect');
+        res.render('pages/connect')
     }
-});
+})
 
 
 async function getGenresFromSpotifyAPI(req) {
     try {
-        const response = await fetchWebApi(req, 'v1/recommendations/available-genre-seeds', 'GET');
-        return response.genres;
+        const response = await fetchWebApi(req, 'v1/recommendations/available-genre-seeds', 'GET')
+        return response.genres
     } catch (error) {
-        console.error('Error fetching genres from Spotify API:', error);
-        throw new Error('An error occurred while fetching genres from Spotify API.');
+        console.error('Error fetching genres from Spotify API:', error)
+        throw new Error('An error occurred while fetching genres from Spotify API.')
     }
 }
 

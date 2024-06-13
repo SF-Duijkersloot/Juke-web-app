@@ -18,8 +18,12 @@
     <main>
         <h1>Profiel</h1>
         <section id="user">
-            <img src="<%= image %>">
-            <!-- Juke logo als pfp gebruiken? -->
+            <% if (image == null) { %>
+                <img src="/images/defaultProfile.svg">
+            <% } else { %>
+                <img src="<%= image %>">
+            <% } %>
+
             <h3><%= user.display_name %></h3>
             <a href="/logout">Uitloggen</a>
         </section>
@@ -114,7 +118,7 @@
 
     </main>
     <script defer src="scripts/app.js"></script>
-
+    <script defer src="scripts/counter.js"></script>
 </body>
 
 </html>
