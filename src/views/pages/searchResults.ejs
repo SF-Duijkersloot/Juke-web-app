@@ -57,7 +57,6 @@
                         <p class="textOverflow"><%= artist.name %></p>
                     </div>
 
-                    <!-- <a href="/search-recommendations?seed_uri=<%= artist.id %>&seed_type=seed_artists" class="recommendation-button">Get Recommendations</a> -->
                     <form action="/search-recommendations" method="get">
                         <input type="hidden" name="seed_uri" value="<%= artist.id %>">
                         <input type="hidden" name="seed_type" value="seed_artists">
