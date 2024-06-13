@@ -321,7 +321,9 @@ const handleCardEvent = async (cardElement, action, e) => {
         const newCard = createCardElement(newRecommendation, isSearch);
 
         // Voeg nieuwe card toe aan de pagina
-        cardsContainer.appendChild(newCard);
+        setTimeout(() => {
+            cardsContainer.appendChild(newCard);
+        }, 250)
     }
 }
 

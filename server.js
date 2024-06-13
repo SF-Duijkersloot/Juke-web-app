@@ -413,7 +413,90 @@ async function getTopTracks(req) {
 
 
 
+// async function getInitialRecommendations(req, limit, seed_type, seed_uri) {
+//     console.log('Fetching initial recommendations...');
+//     let approvedRecommendations = [];
+//     let remainingLimit = limit;
 
+//     while (remainingLimit > 0) {
+//         console.log(`Fetching ${remainingLimit} recommendations...`);
+//         const recommendations = (
+//             await fetchWebApi(
+//                 req,
+//                 `v1/recommendations?limit=${remainingLimit}&${seed_type}=${seed_uri.join(',')}`,
+//                 'GET'
+//             )
+//         ).tracks;
+
+//         console.log(`Received ${recommendations.length} recommendations. Filtering...`);
+//         const filteredRecommendations = await filterRecommendations(req, recommendations);
+//         console.log(`Approved ${filteredRecommendations.length} recommendations.`);
+//         approvedRecommendations.push(...filteredRecommendations);
+//         remainingLimit = limit - approvedRecommendations.length;
+
+//         if (approvedRecommendations.length >= 10) break;
+//     }
+
+//     console.log(`Total approved recommendations: ${approvedRecommendations.length}`);
+//     req.session.recommendationTracks = approvedRecommendations;
+// }
+
+// async function filterRecommendations(req, recommendations) {
+//     const filteredRecommendations = await Promise.all(
+//         recommendations.map(async (track) => {
+//             if (!hasPreviewUrl(track)) {
+//                 console.log(`Track "${track.name}" doesn't have a preview_url`);
+//                 return null;
+//             }
+
+//             const userRecommendations = await usersCollection.findOne(
+//                 {
+//                     _id: req.session.user.id,
+//                     'recommendations._id': track.id
+//                 },
+//                 { projection: { _id: 1 } }
+//             );
+
+//             if (userRecommendations) {
+//                 console.log(`Track "${track.name}" already registered.`);
+//                 return null;
+//             }
+
+//             return track;
+//         })
+//     );
+
+//     return filteredRecommendations.filter(Boolean);
+// }
+
+// function hasPreviewUrl(track) {
+//     return track.preview_url !== null && track.preview_url !== '';
+// }
+
+// /*==========================================\
+
+//            Regular recommendations
+
+// ===========================================*/
+// app.get('/recommendations', async (req, res) => {
+//     try {
+//         const limit = parseInt(req.query.limit) || 20;
+//         const seed_type = req.query.seed_type || 'seed_tracks';
+//         const topTracks = await getTopTracks(req);
+//         const seed_uri = topTracks.map(track => track.id);
+
+//         if (!req.session.recommendationTracks || req.session.recommendationTracks.length < 3) {
+//             await getInitialRecommendations(req, limit, seed_type, seed_uri);
+//         }
+
+//         const recommendedTracks = req.session.recommendationTracks.slice(0, 2);
+//         console.log(`Rendering ${recommendedTracks.length} recommendations.`);
+//         res.render('pages/verkennen', { tracks: recommendedTracks, user: req.session.user });
+//     } catch (error) {
+//         console.error('Error fetching recommendations:', error);
+//         res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
+//     }
+// });
 
 
 /*==========================================\
@@ -424,24 +507,33 @@ async function getTopTracks(req) {
 
 async function getRecommendations(req, limit, seed_type, seed_uri) {
     try {
+        const maxBatchAmount = 20
+        const minBatchAmount = 10
+    
         let approvedRecommendations = []
-        let remainingLimit = limit
-        
-        while (remainingLimit > 0) {
-                const recommendations = (
-                    await fetchWebApi(
-                        req,
-                        `v1/recommendations?limit=${remainingLimit}&${seed_type}=${seed_uri.join(',')}`,
-                        'GET'
-                    )
-                ).tracks
-
+    
+        console.log('Fetching initial recommendations...')
+        while (approvedRecommendations.length < minBatchAmount) {
+            console.log('approvedRecommendations lentgh:', approvedRecommendations.length)
+            const recommendations = (
+                await fetchWebApi(
+                    req,
+                    `v1/recommendations?limit=${maxBatchAmount}&${seed_type}=${seed_uri.join(',')}`,
+                    'GET'
+                )
+            ).tracks
+    
+            console.log(`Received ${recommendations.length} recommendations`)
+    
             const filteredRecommendations = await filterRecommendations(req, recommendations)
             approvedRecommendations.push(...filteredRecommendations)
-            remainingLimit = limit - approvedRecommendations.length
+    
         }
-
-        return approvedRecommendations.slice(0, limit)
+    
+        // Put the approved recommendations in the session
+        req.session.recommendationTracks = approvedRecommendations
+        console.log('Initial recommendations fetched:', approvedRecommendations.length)
+    
     } catch (error) {
         console.error('Error getting recommendations:', error)
     }
@@ -498,7 +590,18 @@ app.get('/recommendations', async (req, res) => {
         const topTracks = await getTopTracks(req)
         const seed_uri = topTracks.map((track) => track.id)
 
-        const recommendedTracks = await getRecommendations(req, limit, seed_type, seed_uri)
+        await getRecommendations(req, limit, seed_type, seed_uri)
+
+        // Get the first 2 recommendations
+        const recommendedTracks = req.session.recommendationTracks.slice(0, limit)
+
+        // Remove the first 2 recommendations from the session
+        req.session.recommendationTracks = req.session.recommendationTracks.slice(limit)
+
+        console.log('length:', req.session.recommendationTracks.length)
+
+        console.log('showing recommended tracks:', recommendedTracks.map(track => track.name))
+
         res.render('pages/verkennen', { tracks: recommendedTracks, user: req.session.user })
     } catch (error) {
         console.error('Error fetching recommendations:', error)
@@ -508,13 +611,22 @@ app.get('/recommendations', async (req, res) => {
 
 app.get('/new-recommendation', async (req, res) => {
     try {
-        const limit = 2
+        const limit = 1
         const seed_type = 'seed_tracks'
         const topTracks = await getTopTracks(req)
         const seed_uri = topTracks.map((track) => track.id)
 
-        const recommendedTracks = await getRecommendations(req, limit, seed_type, seed_uri)
-        res.json({ recommendation: recommendedTracks[0] })
+        if (req.session.recommendationTracks.length <= 3) {
+            // Get new batch of recommendations
+            await getRecommendations(req, limit, seed_type, seed_uri)
+        }
+        
+        const newRecommendation = req.session.recommendationTracks.shift()
+
+        console.log('recommendationTracks length:', req.session.recommendationTracks.length)
+        res.json({ recommendation: newRecommendation })
+        
+
     } catch (error) {
         console.error('Error fetching new recommendation:', error)
         res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' })
@@ -536,7 +648,14 @@ app.get('/search-recommendations', async (req, res) => {
             return res.status(400).json({ error: 'No query provided' })
         }
         const limit = 2
-        const recommendedTracks = await getRecommendations(req, limit, seed_type, [seed_uri])
+        await getRecommendations(req, limit, seed_type, [seed_uri])
+
+        // Get the first 2 recommendations
+        const recommendedTracks = req.session.recommendationTracks.slice(0, limit)
+
+        // Remove the first 2 recommendations from the session
+        req.session.recommendationTracks = req.session.recommendationTracks.slice(limit)
+
         res.render('pages/recommendations', { tracks: recommendedTracks, user: req.session.user, seed_name: seed_name })
     } catch (error) {
         console.error('Error fetching recommendations:', error)
@@ -553,13 +672,22 @@ app.get('/new-search-recommendation', async (req, res) => {
         }
 
         const limit = 1
-        const recommendedTracks = await getRecommendations(req, limit, seed_type, [seed_uri])
-        res.json({ recommendation: recommendedTracks[0] })
+
+        if (req.session.recommendationTracks.length <= 3) {
+            // Get new batch of recommendations
+            await getRecommendations(req, limit, seed_type, [seed_uri])
+        }
+
+        const newRecommendation = req.session.recommendationTracks.shift()
+        console.log('recommendationTracks length:', req.session.recommendationTracks.length)
+
+        res.json({ recommendation: newRecommendation })
     } catch (error) {
         console.error('Error fetching new recommendation:', error)
         res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' })
     }
 })
+
 
 
 
