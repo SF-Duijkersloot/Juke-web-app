@@ -459,7 +459,7 @@ button {
 #heart {
     width: 2em;
     align-self: end;
-    /* margin-top: -1.1em; */
+    margin-top: -1.1em;
     padding-right: .5em;
     stroke: var(--primary);
     fill: var(--gray);
@@ -964,6 +964,9 @@ button {
     width: 100%;
     text-overflow: ellipsis;
     width: auto;
+}
+.likedCard p{
+    margin-bottom: .7em;
 }
 
 
