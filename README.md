@@ -1,6 +1,15 @@
 # Juke - Ontdek nieuwe muziek
 
-## W.I.P
+## Team 4
+
+Joost Locher - Frontend
+Annika Mekkelholt - Frontend
+Sep Duijkersluit - Backend
+Vivanne Hoogendam - Backend
+
+## Juke website
+
+Een tinderlike music matching website waarin je je muziek scope verbreed. Sla muziek op in de persoonlijke Spotify Juke playlist en luister on repeat. 
 
 ## Start project
 ```bash
@@ -25,3 +34,15 @@ https://developer.spotify.com/documentation/web-api/reference/get-track
 
 ## License
 MIT license
+
+## Dependencies
+```
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "mongodb": "^6.7.0",
+    "node": "^20.13.1"
+}
+```
