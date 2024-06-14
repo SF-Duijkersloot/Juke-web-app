@@ -976,7 +976,7 @@ app.get('/liked-recommendations', async (req, res) => {
             ]).toArray()
 
             // Extraheer alleen de nummers uit de resultaten
-            const songs = likedSongs.map(item => item.recommendations)
+            const songs = likedSongs.map(item => item.recommendations).reverse()
 
             res.render('pages/liked', { user: req.session.user, songs: songs })
         } catch (err) {
@@ -1002,7 +1002,7 @@ app.get('/disliked-recommendations', async (req, res) => {
             ]).toArray()
 
             // Extraheer alleen de nummers uit de resultaten
-            const songs = dislikedSongs.map(item => item.recommendations)
+            const songs = dislikedSongs.map(item => item.recommendations).reverse()
 
             res.render('pages/disliked', { user: req.session.user, songs: songs })
         } catch (err) {

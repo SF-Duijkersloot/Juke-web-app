@@ -413,6 +413,18 @@ button {
     margin: 1em 0;
 }
 
+.synced-text {
+    display: flex;
+    align-items: center;
+    font-size: 1em;
+    gap: .5em;
+}
+
+.synced-text img {
+    width: 1.5em;
+    filter: invert(1);
+}
+
 .cardProfiel {
 
     display: flex;
