@@ -1,0 +1,17 @@
+<nav>
+    <div class="dropdown"> 
+        <h2>Hi <%= user.display_name %>!</h2>
+        <!-- <h2>Hi, <span><%= user.display_name %></span>!</h2> -->
+        <button aria-label="toggle-menu" class="navigatieButton">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="navigatieContent">
+            <a href="/"><img src="images/Verkennen.svg" alt="home icon" class="icon"><p>Swipen</p></a>
+            <a href="/zoek"><img src="images/zoeken.svg" alt="zoek icon" class="icon"><p>Zoek</p></a>
+            <a href="/profiel"><img src="images/Profiel.svg" alt="profiel icon" class="icon"><p>Profiel</p></a>
+        </div>
+    </div>
+</nav>
+<script defer src="scripts/navMenu.js"></script>

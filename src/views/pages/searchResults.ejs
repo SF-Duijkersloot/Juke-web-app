@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="images/Juke.png">
+    <link rel="stylesheet" href="style.css">
+    <title>Juke.</title>
+</head>
+
+<body>
+    <header>
+        <%- include('../partials/nav', { user: user }) %>
+    </header>
+
+    <main>
+        <div class="backHeader">
+            <a href="/zoek" class="backArrow"><img src="/images/Arrow.svg"></a>
+            <h1>Resultaten</h1>
+        </div>
+
+        <form action="/search" method="get" class="searchContainer">
+            <input type="text" name="q" class="searchBar" placeholder="Zoeken..." value="<%= query %>">
+            <button type="submit" class="searchButton"><img src="images/zoeken.svg" alt="Zoekknop" class="searchIcon"></button>
+        </form>
+
+        <section class="searchResultList">
+            <h2>Nummers</h2>
+            <ul>
+                <% results.tracks.items.forEach(track => { %>
+                <li>
+                    <img src="<%= track.album.images[0]?.url %>" alt="<%= track.name %>"> 
+                    <div class="nummerDiv">
+                        <p class="textOverflow"><%= track.name %></p>
+                        <p class="textOverflow"><%= track.artists.map(artist => artist.name).join(', ') %></p>
+                    </div>
+
+                    <form action="/search-recommendations" method="get">
+                        <input type="hidden" name="seed_uri" value="<%= track.id %>">
+                        <input type="hidden" name="seed_type" value="seed_tracks">
+                        <input type="hidden" name="seed_name" value="<%= track.name %>">
+                        <input type="submit" value="Swipe" class="swipeButton">
+                    </form>                    
+                </li>
+                <% }); %>
+            </ul>
+        </section>
+
+        <section class="searchResultList">
+            <h2>Artiesten</h2>
+            <ul>
+                <% results.artists.items.forEach(artist => { %>
+                <li>
+                    <img src="<%= artist.images[0]?.url %>" alt="<%= artist.name %>">
+                    <div>
+                        <p class="textOverflow"><%= artist.name %></p>
+                    </div>
+
+                    <form action="/search-recommendations" method="get">
+                        <input type="hidden" name="seed_uri" value="<%= artist.id %>">
+                        <input type="hidden" name="seed_type" value="seed_artists">
+                        <input type="hidden" name="seed_name" value="<%= artist.name %>">
+                        <input type="submit" value="Swipe" class="swipeButton">
+                    </form>   
+                </li>
+                <% }); %>
+            </ul>
+        </section>
+    </main>
+
+    <script defer src="scripts/app.js"></script>
+</body>
+
+</html>
