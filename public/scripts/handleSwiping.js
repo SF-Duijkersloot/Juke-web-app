@@ -320,6 +320,8 @@ const handleCardEvent = async (cardElement, action, e) => {
         const newRecommendation = await fetchNewRecommendation(isSearch, seed_type, seed_uri);
         const newCard = createCardElement(newRecommendation, isSearch);
 
+        cardsContainer.appendChild(newCard);
+        
         // Voeg nieuwe card toe aan de pagina
         setTimeout(() => {
             cardsContainer.appendChild(newCard);

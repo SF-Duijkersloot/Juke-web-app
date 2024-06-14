@@ -89,7 +89,7 @@ app.get('/logout', (req, res) => {
         Spotify Authorization Flow
 
 ===========================================*/
-// Define environment variables
+// Environment variables
 const client_id = process.env.CLIENT_ID
 const redirect_uri = process.env.REDIRECT_URI
 const client_secret = process.env.CLIENT_SECRET
@@ -253,32 +253,9 @@ app.get('/zoek', async (req, res) => {
 })
 
 
-
-
-// app.get('/genres', async (req, res) => {
-//     if (req.session.loggedIn) {
-//         try {
-//             // Haal de genres op vanuit de Spotify API
-//             const genres = await getGenresFromSpotifyAPI() // Dit is een placeholder voor de functie om genres op te halen van Spotify
-
-//             res.render('pages/genres', {
-//                 user: req.session.user,
-//                 genres: genres
-//             })
-//         } catch (error) {
-//             console.error('Error fetching genres:', error)
-//             res.status(500).send('An error occurred while fetching genres.')
-//         }
-//     } else {
-//         res.render('pages/connect')
-//     }
-// })
-
-
-
 app.get('/profiel', async (req, res) => {
     if (req.session.loggedIn) {
-        const { genres } = await getTopGenres(req);
+        const { genres } = await getTopGenres(req)
 
         // Get user from DB
         const user = await usersCollection.findOne({ _id: req.session.user.id })
@@ -286,15 +263,15 @@ app.get('/profiel', async (req, res) => {
         const recommendations = user.recommendations.reverse().map(track => ({
             ...track,
             liked: track.action === 'like'
-        }));
+        }))
 
-        const totalSwipes = user.swipes.likes + user.swipes.dislikes;
-        const likes = user.swipes.likes;
-        const dislikes = user.swipes.dislikes;
+        const totalSwipes = user.swipes.likes + user.swipes.dislikes
+        const likes = user.swipes.likes
+        const dislikes = user.swipes.dislikes
 
         res.render('pages/profiel', { 
             user: req.session.user,
-            image: req.session.user.images[1]?.url, 
+            image: req.session.user.images[1]?.url || null, 
             genres: genres,
             recommendations: recommendations,
             stats: {
@@ -319,6 +296,7 @@ async function fetchWebApi(req, endpoint, method, body)
 {
     if (!req.session.token || !req.session.token.access_token) 
     {
+        res.redirect('/login')
         throw new Error('Access token is not set or invalid')
     }
     try 
@@ -337,7 +315,7 @@ async function fetchWebApi(req, endpoint, method, body)
     }
     catch (error) 
     {
-        console.error(error)
+        console.error("Error fetching from Spotify API:", error)
     }
 }
 
@@ -363,127 +341,104 @@ async function getUserProfile(req) {
 }
 
 
-
-
-
-
 /*==========================================\
 
                 Get top tracks
 
 ===========================================*/
 async function getTopTracks(req) {
-    const cacheTimeTillExpiration = 60 * 60 * 1000; // 1 hour in milliseconds
+    const cacheTimeTillExpiration = 60 * 60 * 1000 // 1 hour in milliseconds
 
     // Check if top tracks are in the session and not expired
     if (req.session.topTracks && new Date() < new Date(req.session.topTracksExpiry)) {
-        // console.log('Using cached top tracks');
-        // console.log('Top tracks expiry:', req.session.topTracksExpiry);
-        return req.session.topTracks;
+        return req.session.topTracks
     }
 
     // Fetch top tracks from Spotify API
     const topTracks = (await fetchWebApi(
         req,
         'v1/me/top/tracks?time_range=short_term&limit=5', 'GET'
-    )).items;
+    )).items
 
     // Store top tracks and expiry time in session
-    req.session.topTracks = topTracks;
-    req.session.topTracksExpiry = new Date(new Date().getTime() + cacheTimeTillExpiration);
+    req.session.topTracks = topTracks
+    req.session.topTracksExpiry = new Date(new Date().getTime() + cacheTimeTillExpiration)
 
-    // console.log('Fetched new top tracks');
-    // console.log('Top tracks expiry:', req.session.topTracksExpiry);
-    return topTracks;
+    return topTracks
 }
 
 
+/*==========================================\
+
+                Get topartists
+                
+===========================================*/
 
 
-// async function getInitialRecommendations(req, limit, seed_type, seed_uri) {
-//     console.log('Fetching initial recommendations...');
-//     let approvedRecommendations = [];
-//     let remainingLimit = limit;
+async function getTopArtists(req) {
+    try {
+        const artists = (await fetchWebApi(
+            req,
+            'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
+        )).items
 
-//     while (remainingLimit > 0) {
-//         console.log(`Fetching ${remainingLimit} recommendations...`);
-//         const recommendations = (
-//             await fetchWebApi(
-//                 req,
-//                 `v1/recommendations?limit=${remainingLimit}&${seed_type}=${seed_uri.join(',')}`,
-//                 'GET'
-//             )
-//         ).tracks;
+        // Create a list of unique genres
+        let genresMap = {}
+        artists.forEach(artist => {
+            artist.genres.forEach(genre => {
+                if (!genresMap[genre]) {
+                    genresMap[genre] = {
+                        name: genre,
+                        image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
+                    }
+                }
+            })
+        })
 
-//         console.log(`Received ${recommendations.length} recommendations. Filtering...`);
-//         const filteredRecommendations = await filterRecommendations(req, recommendations);
-//         console.log(`Approved ${filteredRecommendations.length} recommendations.`);
-//         approvedRecommendations.push(...filteredRecommendations);
-//         remainingLimit = limit - approvedRecommendations.length;
+        // Convert the genresMap to an array
+        const genres = Object.values(genresMap)
 
-//         if (approvedRecommendations.length >= 10) break;
-//     }
+        return { artists, genres }
+    } catch (error) {
+        console.error('Error fetching top artists:', error)
+    }
+}
 
-//     console.log(`Total approved recommendations: ${approvedRecommendations.length}`);
-//     req.session.recommendationTracks = approvedRecommendations;
-// }
 
-// async function filterRecommendations(req, recommendations) {
-//     const filteredRecommendations = await Promise.all(
-//         recommendations.map(async (track) => {
-//             if (!hasPreviewUrl(track)) {
-//                 console.log(`Track "${track.name}" doesn't have a preview_url`);
-//                 return null;
-//             }
+/*==========================================\
 
-//             const userRecommendations = await usersCollection.findOne(
-//                 {
-//                     _id: req.session.user.id,
-//                     'recommendations._id': track.id
-//                 },
-//                 { projection: { _id: 1 } }
-//             );
+                Get top genres
+                
+===========================================*/
 
-//             if (userRecommendations) {
-//                 console.log(`Track "${track.name}" already registered.`);
-//                 return null;
-//             }
+async function getTopGenres(req) {
+    try {
+        const artists = (await fetchWebApi(
+            req,
+            'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
+        )).items
 
-//             return track;
-//         })
-//     );
+        // Create a list of unique genres
+        let genresMap = {}
+        artists.forEach(artist => {
+            artist.genres.forEach(genre => {
+                if (!genresMap[genre]) {
+                    genresMap[genre] = {
+                        name: genre,
+                        image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
+                    }
+                }
+            })
+        })
 
-//     return filteredRecommendations.filter(Boolean);
-// }
+        // Convert the genresMap to an array
+        const genres = Object.values(genresMap)
 
-// function hasPreviewUrl(track) {
-//     return track.preview_url !== null && track.preview_url !== '';
-// }
-
-// /*==========================================\
-
-//            Regular recommendations
-
-// ===========================================*/
-// app.get('/recommendations', async (req, res) => {
-//     try {
-//         const limit = parseInt(req.query.limit) || 20;
-//         const seed_type = req.query.seed_type || 'seed_tracks';
-//         const topTracks = await getTopTracks(req);
-//         const seed_uri = topTracks.map(track => track.id);
-
-//         if (!req.session.recommendationTracks || req.session.recommendationTracks.length < 3) {
-//             await getInitialRecommendations(req, limit, seed_type, seed_uri);
-//         }
-
-//         const recommendedTracks = req.session.recommendationTracks.slice(0, 2);
-//         console.log(`Rendering ${recommendedTracks.length} recommendations.`);
-//         res.render('pages/verkennen', { tracks: recommendedTracks, user: req.session.user });
-//     } catch (error) {
-//         console.error('Error fetching recommendations:', error);
-//         res.status(500).json({ error: 'An error occurred while fetching recommendations.' });
-//     }
-// });
+        return { genres }
+    } catch (error) {
+        console.error('Error fetching genres:', error)
+    }
+}
 
 
 /*==========================================\
@@ -492,7 +447,7 @@ async function getTopTracks(req) {
 
 ===========================================*/
 
-async function getRecommendations(req, limit, seed_type, seed_uri) {
+async function getRecommendations(req, seed_type, seed_uri) {
     try {
         const maxBatchAmount = 20
         const minBatchAmount = 10
@@ -572,23 +527,22 @@ function hasPreviewUrl(track) {
 ===========================================*/
 app.get('/recommendations', async (req, res) => {
     try {
-        const limit = 2
+        const recommendationsAmount = 2
         const seed_type = 'seed_tracks'
         const topTracks = await getTopTracks(req)
         const seed_uri = topTracks.map((track) => track.id)
 
-        await getRecommendations(req, limit, seed_type, seed_uri)
+        await getRecommendations(req, seed_type, seed_uri)
 
-        // Get the first 2 recommendations
-        const recommendedTracks = req.session.recommendationTracks.slice(0, limit)
+        // Get first 2 recommendations and remove them from the session
+        const recommendedTracks = req.session.recommendationTracks.slice(0, recommendationsAmount)
+        req.session.recommendationTracks = req.session.recommendationTracks.slice(recommendationsAmount)
 
-        // Remove the first 2 recommendations from the session
-        req.session.recommendationTracks = req.session.recommendationTracks.slice(limit)
-
+        // Debugging
         console.log('length:', req.session.recommendationTracks.length)
-
         console.log('showing recommended tracks:', recommendedTracks.map(track => track.name))
 
+        // Render page with recommendations
         res.render('pages/verkennen', { tracks: recommendedTracks, user: req.session.user })
     } catch (error) {
         console.error('Error fetching recommendations:', error)
@@ -598,22 +552,21 @@ app.get('/recommendations', async (req, res) => {
 
 app.get('/new-recommendation', async (req, res) => {
     try {
-        const limit = 1
         const seed_type = 'seed_tracks'
         const topTracks = await getTopTracks(req)
         const seed_uri = topTracks.map((track) => track.id)
 
-        if (req.session.recommendationTracks.length <= 3) {
-            // Get new batch of recommendations
-            await getRecommendations(req, limit, seed_type, seed_uri)
+        // Fetch new recommendations if there are less than 5 left in the session batch
+        if (req.session.recommendationTracks.length < 5) {
+            await getRecommendations(req, seed_type, seed_uri)
         }
         
+        // Get the first recommendation from the session and remove it from the session
         const newRecommendation = req.session.recommendationTracks.shift()
-
         console.log('recommendationTracks length:', req.session.recommendationTracks.length)
-        res.json({ recommendation: newRecommendation })
-        
 
+        // Send the new recommendation to the frontend
+        res.json({ recommendation: newRecommendation })
     } catch (error) {
         console.error('Error fetching new recommendation:', error)
         res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' })
@@ -630,18 +583,17 @@ app.get('/new-recommendation', async (req, res) => {
 app.get('/search-recommendations', async (req, res) => {
     try {
         const { seed_uri, seed_type, seed_name } = req.query
+        const recommendationsAmount = 2
 
         if (!seed_uri || !seed_type) {
             return res.status(400).json({ error: 'No query provided' })
         }
-        const limit = 2
-        await getRecommendations(req, limit, seed_type, [seed_uri])
+        
+        await getRecommendations(req, seed_type, [seed_uri])        
 
-        // Get the first 2 recommendations
-        const recommendedTracks = req.session.recommendationTracks.slice(0, limit)
-
-        // Remove the first 2 recommendations from the session
-        req.session.recommendationTracks = req.session.recommendationTracks.slice(limit)
+        // Get the first 2 recommendations and remove them from the session
+        const recommendedTracks = req.session.recommendationTracks.slice(0, recommendationsAmount)
+        req.session.recommendationTracks = req.session.recommendationTracks.slice(recommendationsAmount)
 
         res.render('pages/recommendations', { tracks: recommendedTracks, user: req.session.user, seed_name: seed_name })
     } catch (error) {
@@ -658,16 +610,16 @@ app.get('/new-search-recommendation', async (req, res) => {
             return res.status(400).json({ error: 'Missing seed_type or seed_uri' })
         }
 
-        const limit = 1
-
-        if (req.session.recommendationTracks.length <= 3) {
-            // Get new batch of recommendations
-            await getRecommendations(req, limit, seed_type, [seed_uri])
+        // If the batch is less than 5, fetch new recommendations
+        if (req.session.recommendationTracks.length < 5) {
+            await getRecommendations(req, seed_type, [seed_uri])
         }
 
+        // Get the first recommendation from the session and remove it
         const newRecommendation = req.session.recommendationTracks.shift()
         console.log('recommendationTracks length:', req.session.recommendationTracks.length)
 
+        // Send the new recommendation to the frontend
         res.json({ recommendation: newRecommendation })
     } catch (error) {
         console.error('Error fetching new recommendation:', error)
@@ -764,37 +716,37 @@ app.get('/delete-playlist', async (req, res) => {
 ===========================================*/
 
 app.post('/like', async (req, res) => {
-    await handleSongAction(req, res, 'like');
-});
+    await handleSongAction(req, res, 'like')
+})
 
 app.post('/dislike', async (req, res) => {
-    await handleSongAction(req, res, 'dislike');
-});
+    await handleSongAction(req, res, 'dislike')
+})
 
 async function handleSongAction(req, res, action) {
-    const { track_id, track_name, track_artists, track_images } = req.body;
+    const { track_id, track_name, track_artists, track_images } = req.body
 
     if (!track_id) {
-        return res.status(400).send({ status: 'No track_id found' });
+        return res.status(400).send({ status: 'No track_id found' })
     }
 
     try {
-        const userId = req.session.user.id; // Get the user ID from the session
+        const userId = req.session.user.id // Get the user ID from the session
 
         // Check if the user exists in the database
-        const user = await usersCollection.findOne({ _id: userId });
+        const user = await usersCollection.findOne({ _id: userId })
 
         if (!user) {
-            return res.status(404).send({ status: 'error', message: 'User not found' });
+            return res.status(404).send({ status: 'error', message: 'User not found' })
         }
 
         // Check if the song is already in the recommendations array
         const existingTrack = user.recommendations.find(
             (track) => track._id === track_id
-        );
+        )
         if (existingTrack && existingTrack.action === action) {
-            console.log('Song already in recommendations with the same action');
-            return res.status(200).send({ status: 'success' });
+            console.log('Song already in recommendations with the same action')
+            return res.status(200).send({ status: 'success' })
         }
 
         // Update the action if the track exists with a different action
@@ -805,7 +757,7 @@ async function handleSongAction(req, res, action) {
                     $set: { 'recommendations.$.action': action },
                     $inc: { 'swipes.likes': action === 'like' ? 1 : -1, 'swipes.dislikes': action === 'dislike' ? 1 : -1 }
                 }
-            );
+            )
         } else {
             // Create a track object
             const track = {
@@ -814,7 +766,7 @@ async function handleSongAction(req, res, action) {
                 artists: track_artists,
                 images: track_images,
                 action: action,
-            };
+            }
 
             // Add info to database
             await usersCollection.updateOne(
@@ -823,52 +775,52 @@ async function handleSongAction(req, res, action) {
                     $push: { recommendations: track },
                     $inc: { 'swipes.likes': action === 'like' ? 1 : 0, 'swipes.dislikes': action === 'dislike' ? 1 : 0 }
                 }
-            );
+            )
         }
-        console.log(`Song updated/added with id: ${track_id}`);
+        console.log(`Song updated/added with id: ${track_id}`)
 
         // Add or remove song to/from playlist based on action
         if (action === 'like') {
-            await addSongToPlaylist(req);
+            await addSongToPlaylist(req)
         } else {
-            await removeSongFromPlaylist(req);
+            await removeSongFromPlaylist(req)
         }
 
         // Register the song in the songs collection
-        await registerSongCollection(req, action);
+        await registerSongCollection(req, action)
 
-        res.status(200).send({ status: 'success' });
+        res.status(200).send({ status: 'success' })
     } catch (err) {
-        console.error(err);
-        res.status(500).send({ status: 'error', message: err.message });
+        console.error(err)
+        res.status(500).send({ status: 'error', message: err.message })
     }
 }
 
 async function addSongToPlaylist(req) {
     try {
-        const { track_id } = req.body;
+        const { track_id } = req.body
 
-        const playlistId = await JukePlaylist(req);
+        const playlistId = await JukePlaylist(req)
         const response = await fetchWebApi(
             req,
             `v1/playlists/${playlistId}/tracks`,
             'POST',
             { uris: [`spotify:track:${track_id}`] }
-        );
+        )
 
-        console.log('Song added to playlist', response);
+        console.log('Song added to playlist', response)
     } catch (error) {
-        console.error('Error adding song to playlist:', error);
+        console.error('Error adding song to playlist:', error)
     }
 }
 
 async function registerSongCollection(req, action) {
     try {
-        const { track_id, track_name, track_artists, track_images } = req.body;
-        const userId = req.session.user.id;
+        const { track_id, track_name, track_artists, track_images } = req.body
+        const userId = req.session.user.id
 
         // Check if the song already exists in the songs collection
-        let track = await songsCollection.findOne({ _id: track_id });
+        let track = await songsCollection.findOne({ _id: track_id })
         if (!track) {
             let trackInfo = {
                 _id: track_id,
@@ -877,36 +829,36 @@ async function registerSongCollection(req, action) {
                 images: track_images,
                 likes: [],
                 dislikes: []
-            };
-
-            if (action === 'like') {
-                trackInfo.likes.push(userId);
-            } else if (action === 'dislike') {
-                trackInfo.dislikes.push(userId);
-            } else {
-                console.error('Invalid action');
             }
 
-            await songsCollection.insertOne(trackInfo);
-            console.log('Song added to songs collection');
+            if (action === 'like') {
+                trackInfo.likes.push(userId)
+            } else if (action === 'dislike') {
+                trackInfo.dislikes.push(userId)
+            } else {
+                console.error('Invalid action')
+            }
+
+            await songsCollection.insertOne(trackInfo)
+            console.log('Song added to songs collection')
         } else {
-            console.log('Song already exists in the songs collection');
+            console.log('Song already exists in the songs collection')
 
             // Update swipes based on the action
             if (action === 'like' && !track.likes.includes(userId)) {
                 await songsCollection.updateOne(
                     { _id: track_id },
                     { $push: { likes: userId } }
-                );
+                )
             } else if (action === 'dislike' && !track.dislikes.includes(userId)) {
                 await songsCollection.updateOne(
                     { _id: track_id },
                     { $push: { dislikes: userId } }
-                );
+                )
             }
         }
     } catch (error) {
-        console.error('Error registering song:', error);
+        console.error('Error registering song:', error)
     }
 }
 
@@ -944,171 +896,25 @@ app.get('/search', async (req, res) => {
 
 /*==========================================\
 
-                Get topartists
-                
-===========================================*/
-
-
-async function getTopArtists(req) {
-    try {
-        const artists = (await fetchWebApi(
-            req,
-            'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
-        )).items
-
-        // Create a list of unique genres
-        let genresMap = {}
-        artists.forEach(artist => {
-            artist.genres.forEach(genre => {
-                if (!genresMap[genre]) {
-                    genresMap[genre] = {
-                        name: genre,
-                        image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
-                    }
-                }
-            })
-        })
-
-        // Convert the genresMap to an array
-        const genres = Object.values(genresMap)
-
-        return { artists, genres }
-    } catch (error) {
-        console.error('Error fetching top artists:', error)
-    }
-}
-
-/*==========================================\
-
-                Get all genres
-                
-===========================================*/
-
-// Definieer de functie om genres op te halen vanuit de Spotify API
-async function getGenresFromSpotifyAPI(req) {
-    try {
-        // Voer hier de logica uit om genres op te halen vanuit de Spotify API
-        // Gebruik de fetchWebApi-functie om een verzoek naar de Spotify API te doen
-        // Return een array van genres
-    } catch (error) {
-        console.error('Error fetching genres from Spotify API:', error)
-        throw new Error('An error occurred while fetching genres from Spotify API.')
-    }
-}
-
-// Roep de functie aan in de route voor de genrespagina
-app.get('/genres', async (req, res) => {
-    if (req.session.loggedIn) {
-        try {
-            // Haal de genres op vanuit de Spotify API
-            const genres = await getGenresFromSpotifyAPI(req) // Roep de functie aan met 'req' als argument
-
-            res.render('pages/genres', {
-                user: req.session.user,
-                genres: genres
-            })
-        } catch (error) {
-            console.error('Error fetching genres:', error)
-            res.status(500).send('An error occurred while fetching genres.')
-        }
-    } else {
-        res.render('pages/connect')
-    }
-})
-
-
-/*==========================================\
-
-                Get top genres
-                
-===========================================*/
-
-async function getTopGenres(req) {
-    try {
-        const artists = (await fetchWebApi(
-            req,
-            'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
-        )).items
-
-        // Create a list of unique genres
-        let genresMap = {}
-        artists.forEach(artist => {
-            artist.genres.forEach(genre => {
-                if (!genresMap[genre]) {
-                    genresMap[genre] = {
-                        name: genre,
-                        image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
-                    }
-                }
-            })
-        })
-
-        // Convert the genresMap to an array
-        const genres = Object.values(genresMap)
-
-        return { genres }
-    } catch (error) {
-        console.error('Error fetching genres:', error)
-    }
-}
-
-
-
-/*==========================================\
-
-                Get all genres
-                
-===========================================*/
-
-app.get('/genres', async (req, res) => {
-    if (req.session.loggedIn) {
-        try {
-            const genres = await getGenresFromSpotifyAPI(req)
-            res.render('pages/genres', {
-                user: req.session.user,
-                genres: genres
-            })
-        } catch (error) {
-            console.error('Error fetching genres:', error)
-            res.status(500).send('An error occurred while fetching genres.')
-        }
-    } else {
-        res.render('pages/connect')
-    }
-})
-
-
-async function getGenresFromSpotifyAPI(req) {
-    try {
-        const response = await fetchWebApi(req, 'v1/recommendations/available-genre-seeds', 'GET')
-        return response.genres
-    } catch (error) {
-        console.error('Error fetching genres from Spotify API:', error)
-        throw new Error('An error occurred while fetching genres from Spotify API.')
-    }
-}
-
-/*==========================================\
-
             remove from playlist
 
 ===========================================*/
 
 app.post('/unlike', async (req, res) => {
-    const { track_id } = req.body;
+    const { track_id } = req.body
 
     if (!track_id) {
-        return res.status(400).send({ status: 'No track_id found' });
+        return res.status(400).send({ status: 'No track_id found' })
     }
 
     try {
-        const userId = req.session.user.id; // Get the user ID from the session
+        const userId = req.session.user.id // Get the user ID from the session
 
         // Check if the user exists in the database
-        const user = await usersCollection.findOne({ _id: userId });
+        const user = await usersCollection.findOne({ _id: userId })
 
         if (!user) {
-            return res.status(404).send({ status: 'error', message: 'User not found' });
+            return res.status(404).send({ status: 'error', message: 'User not found' })
         }
 
         // Remove the track from the user's recommendations array
@@ -1118,43 +924,144 @@ app.post('/unlike', async (req, res) => {
                 $set: { "recommendations.$.action": "dislike" },
                 $inc: { 'swipes.likes': -1 }
             }
-        );
+        )
         
-        console.log(`Song removed with id: ${track_id}`);
+        console.log(`Song removed with id: ${track_id}`)
 
         // Remove the song from the playlist
-        await removeSongFromPlaylist(req);
+        await removeSongFromPlaylist(req)
 
         // Update the song in the songs collection
         await songsCollection.updateOne(
             { _id: track_id },
             { $pull: { likes: userId } }
-        );
+        )
 
-        res.status(200).send({ status: 'success' });
+        res.status(200).send({ status: 'success' })
     } catch (err) {
-        console.error(err);
-        res.status(500).send({ status: 'error', message: err.message });
+        console.error(err)
+        res.status(500).send({ status: 'error', message: err.message })
     }
-});
+})
 
 async function removeSongFromPlaylist(req) {
     try {
-        const { track_id } = req.body;
-        const playlistId = await JukePlaylist(req);
+        const { track_id } = req.body
+        const playlistId = await JukePlaylist(req)
         const response = await fetchWebApi(
             req,
             `v1/playlists/${playlistId}/tracks`,
             'DELETE',
             { tracks: [{ uri: `spotify:track:${track_id}` }] }
-        );
+        )
 
-        console.log('Song removed from playlist', response);
+        console.log('Song removed from playlist', response)
     } catch (error) {
-        console.error('Error removing song from playlist:', error);
+        console.error('Error removing song from playlist:', error)
     }
 }
 
+
+
+app.get('/liked-recommendations', async (req, res) => {
+    if (req.session.loggedIn) {
+        try {
+            const userId = req.session.user.id
+            // Haal nummers op met de actie 'like' voor de huidige gebruiker
+            const likedSongs = await usersCollection.aggregate([
+                { $match: { _id: userId } },
+                { $unwind: "$recommendations" },
+                { $match: { "recommendations.action": "like" } },
+                { $project: { recommendations: 1, _id: 0 } }
+            ]).toArray()
+
+            // Extraheer alleen de nummers uit de resultaten
+            const songs = likedSongs.map(item => item.recommendations).reverse()
+
+            res.render('pages/liked', { user: req.session.user, songs: songs })
+        } catch (err) {
+            console.error('Error fetching liked recommendations:', err)
+            res.status(500).send('An error occurred while fetching liked recommendations.')
+        }
+    } else {
+        res.render('pages/connect')
+    }
+})
+
+
+app.get('/disliked-recommendations', async (req, res) => {
+    if (req.session.loggedIn) {
+        try {
+            const userId = req.session.user.id
+            // Haal nummers op met de actie 'dislike' voor de huidige gebruiker
+            const dislikedSongs = await usersCollection.aggregate([
+                { $match: { _id: userId } },
+                { $unwind: "$recommendations" },
+                { $match: { "recommendations.action": "dislike" } },
+                { $project: { recommendations: 1, _id: 0 } }
+            ]).toArray()
+
+            // Extraheer alleen de nummers uit de resultaten
+            const songs = dislikedSongs.map(item => item.recommendations).reverse()
+
+            res.render('pages/disliked', { user: req.session.user, songs: songs })
+        } catch (err) {
+            console.error('Error fetching disliked recommendations:', err)
+            res.status(500).send('An error occurred while fetching disliked recommendations.')
+        }
+    } else {
+        res.render('pages/connect')
+    }
+})
+
+
+app.get('/recommendations', async (req, res) => {
+    try {
+        const recommendationsAmount = 2
+        const seed_type = 'seed_tracks'
+        const topTracks = await getTopTracks(req)
+        const seed_uri = topTracks.map((track) => track.id)
+
+        await getRecommendations(req, seed_type, seed_uri)
+
+        // Get first 2 recommendations and remove them from the session
+        const recommendedTracks = req.session.recommendationTracks.slice(0, recommendationsAmount)
+        req.session.recommendationTracks = req.session.recommendationTracks.slice(recommendationsAmount)
+
+        // Debugging
+        console.log('length:', req.session.recommendationTracks.length)
+        console.log('showing recommended tracks:', recommendedTracks.map(track => track.name))
+
+        // Render page with recommendations
+        res.render('pages/verkennen', { tracks: recommendedTracks, user: req.session.user })
+    } catch (error) {
+        console.error('Error fetching recommendations:', error)
+        res.status(500).json({ error: 'An error occurred while fetching recommendations.' })
+    }
+})
+
+app.get('/new-recommendation', async (req, res) => {
+    try {
+        const seed_type = 'seed_tracks'
+        const topTracks = await getTopTracks(req)
+        const seed_uri = topTracks.map((track) => track.id)
+
+        // Fetch new recommendations if there are less than 5 left in the session batch
+        if (req.session.recommendationTracks.length < 5) {
+            await getRecommendations(req, seed_type, seed_uri)
+        }
+        
+        // Get the first recommendation from the session and remove it from the session
+        const newRecommendation = req.session.recommendationTracks.shift()
+        console.log('recommendationTracks length:', req.session.recommendationTracks.length)
+
+        // Send the new recommendation to the frontend
+        res.json({ recommendation: newRecommendation })
+    } catch (error) {
+        console.error('Error fetching new recommendation:', error)
+        res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' })
+    }
+})
 
 /*==========================================\
 
@@ -1165,68 +1072,3 @@ app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`)
   })
 
-
-
-
-
-// app.get('/liked-recommendations', (req, res) => {
-
-//     res.render('pages/liked', { user: req.session.user})
-// })
-
-app.get('/liked-recommendations', async (req, res) => {
-    if (req.session.loggedIn) {
-        try {
-            const userId = req.session.user.id;
-            // Haal nummers op met de actie 'like' voor de huidige gebruiker
-            const likedSongs = await usersCollection.aggregate([
-                { $match: { _id: userId } },
-                { $unwind: "$recommendations" },
-                { $match: { "recommendations.action": "like" } },
-                { $project: { recommendations: 1, _id: 0 } }
-            ]).toArray();
-
-            // Extraheer alleen de nummers uit de resultaten
-            const songs = likedSongs.map(item => item.recommendations);
-
-            res.render('pages/liked', { user: req.session.user, songs: songs });
-        } catch (err) {
-            console.error('Error fetching liked recommendations:', err);
-            res.status(500).send('An error occurred while fetching liked recommendations.');
-        }
-    } else {
-        res.render('pages/connect');
-    }
-});
-
-
-
-
-// app.get('/disliked-recommendations', (req, res) => {
-//     res.render('pages/disliked', { user: req.session.user})
-// })
-
-app.get('/disliked-recommendations', async (req, res) => {
-    if (req.session.loggedIn) {
-        try {
-            const userId = req.session.user.id;
-            // Haal nummers op met de actie 'dislike' voor de huidige gebruiker
-            const dislikedSongs = await usersCollection.aggregate([
-                { $match: { _id: userId } },
-                { $unwind: "$recommendations" },
-                { $match: { "recommendations.action": "dislike" } },
-                { $project: { recommendations: 1, _id: 0 } }
-            ]).toArray();
-
-            // Extraheer alleen de nummers uit de resultaten
-            const songs = dislikedSongs.map(item => item.recommendations);
-
-            res.render('pages/disliked', { user: req.session.user, songs: songs });
-        } catch (err) {
-            console.error('Error fetching disliked recommendations:', err);
-            res.status(500).send('An error occurred while fetching disliked recommendations.');
-        }
-    } else {
-        res.render('pages/connect');
-    }
-});
