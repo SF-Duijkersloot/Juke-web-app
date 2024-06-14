@@ -253,29 +253,6 @@ app.get('/zoek', async (req, res) => {
 })
 
 
-
-
-// app.get('/genres', async (req, res) => {
-//     if (req.session.loggedIn) {
-//         try {
-//             // Haal de genres op vanuit de Spotify API
-//             const genres = await getGenresFromSpotifyAPI() // Dit is een placeholder voor de functie om genres op te halen van Spotify
-
-//             res.render('pages/genres', {
-//                 user: req.session.user,
-//                 genres: genres
-//             })
-//         } catch (error) {
-//             console.error('Error fetching genres:', error)
-//             res.status(500).send('An error occurred while fetching genres.')
-//         }
-//     } else {
-//         res.render('pages/connect')
-//     }
-// })
-
-
-
 app.get('/profiel', async (req, res) => {
     if (req.session.loggedIn) {
         const { genres } = await getTopGenres(req)
@@ -364,10 +341,6 @@ async function getUserProfile(req) {
 }
 
 
-
-
-
-
 /*==========================================\
 
                 Get top tracks
@@ -392,6 +365,79 @@ async function getTopTracks(req) {
     req.session.topTracksExpiry = new Date(new Date().getTime() + cacheTimeTillExpiration)
 
     return topTracks
+}
+
+
+/*==========================================\
+
+                Get topartists
+                
+===========================================*/
+
+
+async function getTopArtists(req) {
+    try {
+        const artists = (await fetchWebApi(
+            req,
+            'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
+        )).items
+
+        // Create a list of unique genres
+        let genresMap = {}
+        artists.forEach(artist => {
+            artist.genres.forEach(genre => {
+                if (!genresMap[genre]) {
+                    genresMap[genre] = {
+                        name: genre,
+                        image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
+                    }
+                }
+            })
+        })
+
+        // Convert the genresMap to an array
+        const genres = Object.values(genresMap)
+
+        return { artists, genres }
+    } catch (error) {
+        console.error('Error fetching top artists:', error)
+    }
+}
+
+
+/*==========================================\
+
+                Get top genres
+                
+===========================================*/
+
+async function getTopGenres(req) {
+    try {
+        const artists = (await fetchWebApi(
+            req,
+            'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
+        )).items
+
+        // Create a list of unique genres
+        let genresMap = {}
+        artists.forEach(artist => {
+            artist.genres.forEach(genre => {
+                if (!genresMap[genre]) {
+                    genresMap[genre] = {
+                        name: genre,
+                        image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
+                    }
+                }
+            })
+        })
+
+        // Convert the genresMap to an array
+        const genres = Object.values(genresMap)
+
+        return { genres }
+    } catch (error) {
+        console.error('Error fetching genres:', error)
+    }
 }
 
 
@@ -850,152 +896,6 @@ app.get('/search', async (req, res) => {
 
 /*==========================================\
 
-                Get topartists
-                
-===========================================*/
-
-
-async function getTopArtists(req) {
-    try {
-        const artists = (await fetchWebApi(
-            req,
-            'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
-        )).items
-
-        // Create a list of unique genres
-        let genresMap = {}
-        artists.forEach(artist => {
-            artist.genres.forEach(genre => {
-                if (!genresMap[genre]) {
-                    genresMap[genre] = {
-                        name: genre,
-                        image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
-                    }
-                }
-            })
-        })
-
-        // Convert the genresMap to an array
-        const genres = Object.values(genresMap)
-
-        return { artists, genres }
-    } catch (error) {
-        console.error('Error fetching top artists:', error)
-    }
-}
-
-/*==========================================\
-
-                Get all genres
-                
-===========================================*/
-
-// Definieer de functie om genres op te halen vanuit de Spotify API
-async function getGenresFromSpotifyAPI(req) {
-    try {
-        // Voer hier de logica uit om genres op te halen vanuit de Spotify API
-        // Gebruik de fetchWebApi-functie om een verzoek naar de Spotify API te doen
-        // Return een array van genres
-    } catch (error) {
-        console.error('Error fetching genres from Spotify API:', error)
-        throw new Error('An error occurred while fetching genres from Spotify API.')
-    }
-}
-
-// Roep de functie aan in de route voor de genrespagina
-app.get('/genres', async (req, res) => {
-    if (req.session.loggedIn) {
-        try {
-            // Haal de genres op vanuit de Spotify API
-            const genres = await getGenresFromSpotifyAPI(req) // Roep de functie aan met 'req' als argument
-
-            res.render('pages/genres', {
-                user: req.session.user,
-                genres: genres
-            })
-        } catch (error) {
-            console.error('Error fetching genres:', error)
-            res.status(500).send('An error occurred while fetching genres.')
-        }
-    } else {
-        res.render('pages/connect')
-    }
-})
-
-
-/*==========================================\
-
-                Get top genres
-                
-===========================================*/
-
-async function getTopGenres(req) {
-    try {
-        const artists = (await fetchWebApi(
-            req,
-            'v1/me/top/artists?time_range=short_term&limit=5', 'GET'
-        )).items
-
-        // Create a list of unique genres
-        let genresMap = {}
-        artists.forEach(artist => {
-            artist.genres.forEach(genre => {
-                if (!genresMap[genre]) {
-                    genresMap[genre] = {
-                        name: genre,
-                        image: artist.images[0]?.url || 'default_genre_image.jpg'  // Use artist image or a default image
-                    }
-                }
-            })
-        })
-
-        // Convert the genresMap to an array
-        const genres = Object.values(genresMap)
-
-        return { genres }
-    } catch (error) {
-        console.error('Error fetching genres:', error)
-    }
-}
-
-
-
-/*==========================================\
-
-                Get all genres
-                
-===========================================*/
-
-app.get('/genres', async (req, res) => {
-    if (req.session.loggedIn) {
-        try {
-            const genres = await getGenresFromSpotifyAPI(req)
-            res.render('pages/genres', {
-                user: req.session.user,
-                genres: genres
-            })
-        } catch (error) {
-            console.error('Error fetching genres:', error)
-            res.status(500).send('An error occurred while fetching genres.')
-        }
-    } else {
-        res.render('pages/connect')
-    }
-})
-
-
-async function getGenresFromSpotifyAPI(req) {
-    try {
-        const response = await fetchWebApi(req, 'v1/recommendations/available-genre-seeds', 'GET')
-        return response.genres
-    } catch (error) {
-        console.error('Error fetching genres from Spotify API:', error)
-        throw new Error('An error occurred while fetching genres from Spotify API.')
-    }
-}
-
-/*==========================================\
-
             remove from playlist
 
 ===========================================*/
@@ -1062,23 +962,6 @@ async function removeSongFromPlaylist(req) {
 }
 
 
-/*==========================================\
-
-              Start the server
-
-===========================================*/
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`)
-  })
-
-
-
-
-
-// app.get('/liked-recommendations', (req, res) => {
-
-//     res.render('pages/liked', { user: req.session.user})
-// })
 
 app.get('/liked-recommendations', async (req, res) => {
     if (req.session.loggedIn) {
@@ -1106,12 +989,6 @@ app.get('/liked-recommendations', async (req, res) => {
 })
 
 
-
-
-// app.get('/disliked-recommendations', (req, res) => {
-//     res.render('pages/disliked', { user: req.session.user})
-// })
-
 app.get('/disliked-recommendations', async (req, res) => {
     if (req.session.loggedIn) {
         try {
@@ -1136,7 +1013,6 @@ app.get('/disliked-recommendations', async (req, res) => {
         res.render('pages/connect')
     }
 })
-
 
 
 app.get('/recommendations', async (req, res) => {
@@ -1186,3 +1062,13 @@ app.get('/new-recommendation', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while fetching a new recommendation.' })
     }
 })
+
+/*==========================================\
+
+              Start the server
+
+===========================================*/
+app.listen(port, () => {
+    console.log(`Server listening at http://localhost:${port}`)
+  })
+
