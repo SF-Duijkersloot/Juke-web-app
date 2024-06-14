@@ -1,6 +1,6 @@
 
-var options = {
+const options = {
     valueNames: ['listNummer', 'listArtiest']
 };
 
-var likedList = new List('theList', options);
+const likedList = new List('theList', options);

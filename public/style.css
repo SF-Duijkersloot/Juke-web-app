@@ -19,7 +19,6 @@
     --p1: 1.1em;
 }
 
-
 /* Algemene stijlen */
 
 body {
@@ -31,12 +30,7 @@ body {
     box-sizing: border-box;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
     margin: 0;
     font-family: 'Poppins', sans-serif;
 }
@@ -105,7 +99,6 @@ button {
     width: 80%;
     height: 80%;
     object-fit: cover;
-    /* Ensure the image covers the button */
 }
 
 .searchList {
@@ -289,12 +282,10 @@ button {
     border: .15em solid var(--primary);
 }
 
-
 #user a:active {
     background-color: var(--light);
     border: .15em solid var(--accent);
 }
-
 
 #playlists {
     display: flex;
@@ -307,7 +298,6 @@ button {
 #playlists a {
     display: flex;
     justify-content: space-between;
-
     width: 95%;
     height: 3em;
     padding: .5em 1em;
@@ -317,7 +307,6 @@ button {
     background-color: var(--light);
     color: var(--dark);
     border: solid .1em var(--primary);
-
 }
 
 #playlists a:visited {
@@ -342,8 +331,6 @@ button {
     margin-right: 1em;
 }
 
-
-
 .likedLink img:nth-of-type(2) {
     margin-left: auto;
 }
@@ -352,8 +339,6 @@ button {
     margin-left: auto;
 }
 
-
-
 #playlists a:visited {
     text-decoration: none;
     color: var(--dark);
@@ -361,7 +346,6 @@ button {
 
 .blackversion {
     filter: invert(100%) sepia(100%) saturate(10000%) hue-rotate(180deg) brightness(0%) contrast(100%);
-
 }
 
 #stats {
@@ -380,14 +364,11 @@ button {
     display: flex;
     overflow-x: auto;
     white-space: nowrap;
-    scrollbar-width: none;
-   
-    /* Firefox */
+    scrollbar-width: none;    /* Firefox */
 }
 
 #statsGenre::-webkit-scrollbar {
-    display: none;
-    /* Safari and Chrome */
+    display: none;     /* Safari and Chrome */
 }
 
 #statsGenre p {
@@ -414,7 +395,6 @@ button {
 }
 
 .cardProfiel {
-
     display: flex;
     flex-direction: column;
     width: 10.5em;
@@ -435,7 +415,6 @@ button {
 .cardProfiel div {
     flex-direction: column;
     padding: 0.2em 0.5em;
-
     max-width: 100%;
     box-sizing: border-box;
     border-radius: .5em;
@@ -470,7 +449,6 @@ button {
 
 #heart.like {
     animation: 2s ease-in forwards like;
-    /* , 0.8s linear 2s 2 forwards beat ; */
 }
 
 #heart.unlike {
@@ -602,7 +580,6 @@ button {
     display: none;
 }
 
-
 /* -------------------open--------------------------- */
 
 .navigatieButton.open span:nth-of-type(1) {
@@ -638,9 +615,7 @@ button {
     transition-delay: 0.2s;
 }
 
-
 /* ----------------connectpage-------------- */
-
 
 .aanmelden {
     display: flex;
@@ -815,7 +790,6 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
-
 }
 
 .buttons button {
@@ -889,9 +863,7 @@ button {
 .track-buttons .progress-ring {
     position: absolute;
     scale: -1.2 1.2;
-    /* spiegelt circle */
     rotate: 90deg;
-    /* start op 12 uur */
     z-index: 1;
 }
 
@@ -902,7 +874,6 @@ button {
     stroke-dasharray: 250;
     stroke-dashoffset: -250;
 }
-
 
 /* ------------------likedpagina----------------- */
 
@@ -921,7 +892,6 @@ button {
     list-style-type: none;
     padding: 0;
 }
-
 
 .likedCard {
     display: flex;
@@ -955,7 +925,6 @@ button {
     margin-bottom: .7em;
 }
 
-
 /* -----------------media query-------------- */
 
 @media (min-width: 992px) {
@@ -978,7 +947,6 @@ button {
         align-items: center;
         justify-content: start;
         position: relative;
-
     }
 
     #genreHeaderDiv h1 {
@@ -1040,7 +1008,6 @@ button {
         transition: none;
         width: 80%;
         text-decoration: none;
-
     }
 
     .navigatieContent a:visited {
@@ -1097,7 +1064,6 @@ button {
         color: var(--light);
         font-size: 1.1em;
         box-shadow: .1em .1em 1em var(--grey);
-
     }
 
     .Spotify-btn img {
@@ -1114,7 +1080,6 @@ button {
         width: 50%;
         animation: rotation 10s infinite ease;
         animation-timing-function: linear;
-
     }
 
     #background {
@@ -1179,7 +1144,6 @@ button {
         width: 80%;
         flex-direction: row;
         margin: 1.5em 0;
-
     }
 
     #playlists a {
@@ -1195,9 +1159,7 @@ button {
     }
 }
 
-
 @media (prefers-color-scheme: dark) {
-
     :root {
         --dark: #FAFAFC;
         --light: #292929;
@@ -1214,14 +1176,12 @@ button {
         box-shadow: var(--dark);
     }
 
-
     /* recommendations */
     .dislike-button img,
     .preview-button img,
     .like-button img {
         filter: invert(1);
     }
-
 
     /* nav */
     .navigatieButton {
@@ -1266,7 +1226,6 @@ button {
     .swipeButton:hover {
         color: var(--dark);
     }
-
 
     /* profiel */
 
