@@ -511,20 +511,6 @@ button {
     }
 }
 
-/* @keyframes beat {
-    0% {
-      transform: scale(1, 1);
-    }
-  
-    50% {
-      transform: scale(0.9, 0.9);
-    }
-    
-    100% {
-      transform: scale(1, 1);
-    }
-  } */
-
 /* -----------------nav------------------------ */
 .dropdown h2 {
     display: none;
@@ -996,7 +982,6 @@ button {
     }
 
     #genreHeaderDiv h1 {
-        text-align: start;
         margin-left: 1em;
     }
 
@@ -1216,6 +1201,7 @@ button {
     :root {
         --dark: #FAFAFC;
         --light: #292929;
+        --newblack:#535252;
     }
 
     /* connect */
@@ -1254,10 +1240,6 @@ button {
     .navigatieContent a {
         background-color: var(--light);
     }
-
-    
-
-    
 
     /* zoek */
     .searchBar {
@@ -1321,6 +1303,6 @@ button {
     }
 
     .dropdown {
-        background: linear-gradient(180deg, #8F8F8F 0%, #292929 100%);
+       background-color: var(--newblack);
     }
 }
